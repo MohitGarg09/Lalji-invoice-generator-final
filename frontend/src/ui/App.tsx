@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import CRM from './CRM'
 
 type Sweet = {
   id: number
@@ -19,13 +20,17 @@ type InvoiceItemDraft = {
   amount?: number
 }
 
-const API_BASE = 'http://127.0.0.1:8000/api'
+// Use environment variable for API base (e.g., https://your-backend.onrender.com/api)
+const API_BASE = (import.meta as any)?.env?.VITE_API_BASE || 'http://127.0.0.1:8000/api'
 
 export default function InvoiceApp() {
+  const [currentPage, setCurrentPage] = useState<'invoice' | 'crm'>('invoice')
+  const [crmRefreshTrigger, setCrmRefreshTrigger] = useState(0)
+  
   const [sweets, setSweets] = useState<Sweet[]>([])
   const [customerName, setCustomerName] = useState('')
-  const [billType, setBillType] = useState<'GST' | 'Non-GST'>('GST')
-  const [paymentMode, setPaymentMode] = useState<'cash' | 'credit'>('cash')
+  const [billType, setBillType] = useState<'GST' | 'Non-GST'>('Non-GST')
+  const [paymentMode, setPaymentMode] = useState<'cash' | 'credit'>('credit')
   const [discountPct, setDiscountPct] = useState('0')
   const [items, setItems] = useState<InvoiceItemDraft[]>([{}])
   const [creating, setCreating] = useState(false)
@@ -80,7 +85,6 @@ export default function InvoiceApp() {
   const discount =
     subtotal *
     (Math.min(Math.max(parseFloat(discountPct || '0'), 0), 100) / 100)
-  const total = subtotal - discount
   const gstEnabled = billType === 'GST'
   const sgst = gstEnabled ? (subtotal - discount) * 0.025 : 0
   const cgst = gstEnabled ? (subtotal - discount) * 0.025 : 0
@@ -187,6 +191,11 @@ export default function InvoiceApp() {
       return;
     }
   
+    if (!dmNo.trim()) {
+      alert("DM No. is required");
+      return;
+    }
+  
     if (items.length === 0 || !items.some(it => it.sweetName || it.sweetId)) {
       alert("Add at least one sweet to create invoice");
       return;
@@ -197,12 +206,14 @@ export default function InvoiceApp() {
     setCreating(true);
     try {
       const updatedItems = [...items];
+      // Use a local working list to include newly created sweets immediately
+      const workingSweets: Sweet[] = [...sweets];
   
       // Step 1: Ensure all typed sweets exist
       for (let i = 0; i < updatedItems.length; i++) {
         const it = updatedItems[i];
         if (!it.sweetId && it.sweetName?.trim()) {
-          let existing = sweets.find(
+          let existing = workingSweets.find(
             (s) => s.name.toLowerCase() === it.sweetName!.toLowerCase()
           );
   
@@ -221,18 +232,28 @@ export default function InvoiceApp() {
               throw new Error(`Failed to create sweet: ${await res.text()}`);
             }
   
-            existing = await res.json();
-            setSweets((prev) => [...prev, existing]); // Update state safely
+            const newSweet = await res.json();
+            if (newSweet) {
+              existing = newSweet;
+              // Update local working list immediately for subsequent lookups
+              workingSweets.push(newSweet);
+              // Update state (async) for UI consistency
+              setSweets((prev) => [...prev, newSweet]);
+            }
           }
-  
-          it.sweetId = existing.id;
-          it.mode = it.mode || existing.sweet_type;
+
+          if (existing) {
+            it.sweetId = existing.id;
+            it.mode = it.mode || existing.sweet_type;
+          } else {
+            throw new Error(`Failed to find or create sweet: ${it.sweetName}`);
+          }
         }
       }
   
       // Step 2: Calculate amounts safely
       updatedItems.forEach((it) => {
-        const sweet = sweets.find((s) => s.id === it.sweetId);
+        const sweet = workingSweets.find((s) => s.id === it.sweetId);
         if (!sweet) return;
   
         const mode = it.mode || sweet.sweet_type;
@@ -264,7 +285,7 @@ export default function InvoiceApp() {
         items: updatedItems
           .filter((it) => it.sweetId)
           .map((it) => {
-            const sweet = sweets.find((s) => s.id === it.sweetId)!;
+            const sweet = workingSweets.find((s) => s.id === it.sweetId)!;
             const mode = it.mode || sweet.sweet_type;
             if (mode === "weight") {
               return {
@@ -298,6 +319,18 @@ export default function InvoiceApp() {
       const data = await res.json();
       setCreatedId(data.id);
       alert("Invoice created successfully!");
+      
+      // Trigger CRM refresh
+      setCrmRefreshTrigger(prev => prev + 1);
+      
+      // Reset form after saving
+      setCustomerName('');
+      setDmNo('');
+      setDiscountPct('0');
+      setBillType('Non-GST');
+      setPaymentMode('credit');
+      setItems([{}]);
+      setCreatedId(null);
     } catch (e) {
       console.error(e);
       alert("Failed to create invoice: " + e);
@@ -311,6 +344,21 @@ export default function InvoiceApp() {
     a.href = url
     a.target = '_blank'
     a.click()
+    
+    // Trigger CRM refresh after PDF download
+    setTimeout(() => {
+      setCrmRefreshTrigger(prev => prev + 1);
+    }, 1000);
+  }
+
+  // Show CRM if on CRM page
+  if (currentPage === 'crm') {
+    return (
+      <CRM 
+        onNavigateToInvoice={() => setCurrentPage('invoice')}
+        refreshTrigger={crmRefreshTrigger}
+      />
+    )
   }
 
   return (
@@ -338,14 +386,34 @@ export default function InvoiceApp() {
             background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
             padding: '32px 40px',
             color: 'white',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
           }}
         >
-          <h1 style={{ margin: 0, fontSize: '32px', fontWeight: 700 }}>
-            Invoice Generator
-          </h1>
-          <p style={{ margin: '8px 0 0 0', opacity: 0.9, fontSize: '16px' }}>
-            Create and manage your invoices efficiently
-          </p>
+          <div>
+            <h1 style={{ margin: 0, fontSize: '32px', fontWeight: 700 }}>
+              Invoice Generator
+            </h1>
+            <p style={{ margin: '8px 0 0 0', opacity: 0.9, fontSize: '16px' }}>
+              Create and manage your invoices efficiently
+            </p>
+          </div>
+          <button
+            onClick={() => setCurrentPage('crm')}
+            style={{
+              padding: '12px 24px',
+              fontSize: '15px',
+              background: 'rgba(255,255,255,0.2)',
+              color: 'white',
+              border: '2px solid white',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontWeight: 600,
+            }}
+          >
+            View CRM
+          </button>
         </div>
 
         <div style={{ padding: '40px' }}>
@@ -562,13 +630,14 @@ export default function InvoiceApp() {
       marginBottom: '12px',
     }}
   >
-    DM No.
+    DM No. *
   </label>
   <input
     type="text"
-    placeholder="Enter DM number"
+    placeholder="Enter DM number (required)"
     value={dmNo}
     onChange={(e) => setDmNo(e.target.value)}
+    required
     style={{
       width: '100%',
       padding: '10px 14px',
@@ -599,6 +668,7 @@ export default function InvoiceApp() {
                   <th style={{ textAlign: 'left', padding: '16px' }}>MODE</th>
                   <th style={{ textAlign: 'left', padding: '16px' }}>GROSS (KG)</th>
                   <th style={{ textAlign: 'left', padding: '16px' }}>TRAY (KG)</th>
+                  <th style={{ textAlign: 'left', padding: '16px' }}>NET (KG)</th>
                   <th style={{ textAlign: 'left', padding: '16px' }}>COUNT</th>
                   <th style={{ textAlign: 'right', padding: '16px' }}>UNIT PRICE</th>
                   <th style={{ textAlign: 'right', padding: '16px' }}>AMOUNT (₹)</th>
@@ -653,7 +723,7 @@ export default function InvoiceApp() {
                               type="radio"
                               name={`mode-${idx}`}
                               checked={mode === 'weight'}
-                              onChange={() => updateItem(idx, { mode: 'weight' })}
+                              onChange={() => updateItem(idx, { mode: 'weight', count: '' })}
                             />
                             Weight
                           </label>
@@ -669,7 +739,7 @@ export default function InvoiceApp() {
                               type="radio"
                               name={`mode-${idx}`}
                               checked={mode === 'count'}
-                              onChange={() => updateItem(idx, { mode: 'count' })}
+                              onChange={() => updateItem(idx, { mode: 'count', gross_weight_kg: '', tray_weight_kg: '' })}
                             />
                             Count
                           </label>
@@ -708,6 +778,16 @@ export default function InvoiceApp() {
                             background: mode !== 'weight' ? '#f9fafb' : 'white',
                           }}
                         />
+                      </td>
+
+                      {/* Net (KG) - computed */}
+                      <td style={{ padding: '12px 16px', color: '#374151' }}>
+                        {(() => {
+                          const gross = parseFloat(it.gross_weight_kg || '0')
+                          const tray = parseFloat(it.tray_weight_kg || '0')
+                          const net = Math.max((isNaN(gross) ? 0 : gross) - (isNaN(tray) ? 0 : tray), 0)
+                          return mode === 'weight' ? net.toFixed(3) : '-'
+                        })()}
                       </td>
 
                       <td style={{ padding: '12px 16px' }}>
@@ -961,25 +1041,6 @@ export default function InvoiceApp() {
                   }}
                 >
                   Download PDF
-                </button>
-
-                <button
-                  onClick={() =>
-                    download(`${API_BASE}/invoices/${createdId}/excel/`)
-                  }
-                  style={{
-                    padding: '14px 32px',
-                    fontSize: '16px',
-                    background:
-                      'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontWeight: 600,
-                  }}
-                >
-                  Download Excel
                 </button>
               </>
             )}

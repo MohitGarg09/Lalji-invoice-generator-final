@@ -10,7 +10,7 @@ class Sweet(models.Model):
     ]
 
     name = models.CharField(max_length=100, unique=True)
-    sweet_type = models.CharField(max_length=10, choices=TYPE_CHOICES)
+    sweet_type = models.CharField(max_length=10, choices=TYPE_CHOICES, default='weight')
     price_per_kg = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     price_per_unit = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
@@ -26,6 +26,8 @@ class Invoice(models.Model):
     payment_mode = models.CharField(max_length=10, choices=[('cash', 'Cash'), ('credit', 'Credit')], default='cash', null=True, blank=True)
     bill_type = models.CharField(max_length=10, choices=[('GST', 'GST'), ('Non-GST', 'Non-GST')], default='GST', null=True, blank=True)
     dm_no = models.CharField(max_length=100, blank=True, null=True)
+    gst_percent = models.DecimalField(max_digits=5, decimal_places=2, default=5)  # Default 5% GST
+    
     @property
     def subtotal(self):
         return sum(item.total_amount for item in self.items.all())
@@ -40,19 +42,45 @@ class Invoice(models.Model):
         discounted = self.subtotal * (1 - (pct / 100))
         return max(discounted, 0)
 
+    @property
+    def gst_amount(self):
+        """Calculate GST amount if bill_type is GST."""
+        if self.bill_type == 'GST':
+            try:
+                gst_pct = float(self.gst_percent or 5)
+            except Exception:
+                gst_pct = 5
+            return float(self.total) * (gst_pct / 100)
+        return 0
+
+    @property
+    def total_with_gst(self):
+        """Return total amount including GST if applicable."""
+        return float(self.total) + self.gst_amount
+
     def __str__(self):
         return f"Invoice #{self.id or '—'} ({self.customer_name})"
 
 
 class InvoiceItem(models.Model):
+    TYPE_WEIGHT = 'weight'
+    TYPE_COUNT = 'count'
+    TYPE_CHOICES = [
+        (TYPE_WEIGHT, 'By Weight'),
+        (TYPE_COUNT, 'By Count'),
+    ]
+
     invoice = models.ForeignKey(Invoice, related_name='items', on_delete=models.CASCADE)
     sweet = models.ForeignKey(Sweet, on_delete=models.PROTECT)
 
-    # for weight-based sweets (in kg now)
+    # Item-specific type (can differ from sweet's default type)
+    item_type = models.CharField(max_length=10, choices=TYPE_CHOICES, default='weight')
+
+    # for weight-based items (in kg)
     gross_weight_kg = models.DecimalField(max_digits=10, decimal_places=3, null=True, blank=True)
     tray_weight_kg = models.DecimalField(max_digits=10, decimal_places=3, null=True, blank=True)
 
-    # for count-based sweets
+    # for count-based items
     count = models.PositiveIntegerField(null=True, blank=True)
 
     # Optional per-item unit price override (per kg for weight, per piece for count)
@@ -68,17 +96,37 @@ class InvoiceItem(models.Model):
 
     @property
     def total_amount(self):
-        """Compute total based on kg for weight type and count for count type."""
-        if self.sweet.sweet_type == Sweet.TYPE_WEIGHT:
-            if self.net_weight_kg is None:
+        """Compute total based on item_type (weight or count)."""
+        if self.item_type == self.TYPE_WEIGHT:
+            # Weight-based calculation
+            if self.net_weight_kg is None or self.net_weight_kg <= 0:
                 return 0
-            price = self.unit_price_override if self.unit_price_override is not None else self.sweet.price_per_kg
-            return float(self.net_weight_kg) * float(price or 0)
+            price = self.unit_price_override or self.sweet.price_per_kg
+            if price is None:
+                return 0
+            return float(self.net_weight_kg) * float(price)
         else:
-            if not self.count:
+            # Count-based calculation (item_type == TYPE_COUNT)
+            if self.count is None or self.count <= 0:
                 return 0
-            price = self.unit_price_override if self.unit_price_override is not None else self.sweet.price_per_unit
-            return float(self.count) * float(price or 0)
+            price = self.unit_price_override or self.sweet.price_per_unit
+            if price is None:
+                return 0
+            return float(self.count) * float(price)
 
     def __str__(self):
         return f"{self.sweet.name} ({self.invoice_id})"
+
+
+class InvoicePDFRecord(models.Model):
+    invoice = models.OneToOneField(Invoice, on_delete=models.CASCADE, related_name='pdf_record')
+    pdf_file_path = models.CharField(max_length=500)  # Store file path/URL
+    notes = models.TextField(blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"PDF Record for Invoice {self.invoice.id}"

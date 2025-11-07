@@ -1,20 +1,46 @@
 # Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 venv/
+.venv/
+env/
+ENV/
 .env
 .env.* 
 .env.local
 *.sqlite3
+*.db
 
 # Node
 node_modules/
 dist/
 .vscode/
+*.log
 
 # OS
 Thumbs.db
 .DS_Store
 
-# Django static files (collected)
+# Django
 staticfiles/
+media/
+*.log
+db.sqlite3
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+
+# Build files
+build/
+*.egg-info/
+
+# Sensitive files (keep local, don't commit)
+backend/invoice_excel.xlsx
+backend/invoice_records_master.xlsx
+backend/invoices/*.pdf
+frontend/ShreeyaNelekar_SDE2_Resume.pdf
