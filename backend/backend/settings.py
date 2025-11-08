@@ -189,9 +189,24 @@ REST_FRAMEWORK = {
 
 # CORS (configure strict origins in production)
 # Allow specific origins from environment variable, or allow all if not set (development)
-CORS_ALLOWED_ORIGINS = [o.strip() for o in os.environ.get('CORS_ALLOWED_ORIGINS', '').split(',') if o.strip()] if os.environ.get('CORS_ALLOWED_ORIGINS') else []
+# Strip trailing slashes from origins (Django corsheaders doesn't allow paths in origins)
+CORS_ALLOWED_ORIGINS = [o.strip().rstrip('/') for o in os.environ.get('CORS_ALLOWED_ORIGINS', '').split(',') if o.strip()] if os.environ.get('CORS_ALLOWED_ORIGINS') else []
 # If CORS_ALLOWED_ORIGINS is not set or empty, allow all origins (for development)
 CORS_ALLOW_ALL_ORIGINS = not bool(CORS_ALLOWED_ORIGINS)
+# Allow credentials (cookies, authorization headers)
+CORS_ALLOW_CREDENTIALS = True
+# Allow common headers
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
 
 # Access password for general application access (required to use the app)
 # In production, use proper authentication system
