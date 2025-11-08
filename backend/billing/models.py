@@ -27,6 +27,7 @@ class Invoice(models.Model):
     bill_type = models.CharField(max_length=10, choices=[('GST', 'GST'), ('Non-GST', 'Non-GST')], default='GST', null=True, blank=True)
     dm_no = models.CharField(max_length=100, blank=True, null=True)
     gst_percent = models.DecimalField(max_digits=5, decimal_places=2, default=5)  # Default 5% GST
+    pdf_file = models.FileField(upload_to='invoices/%Y/%m/%d/', null=True, blank=True)
     
     @property
     def subtotal(self):
