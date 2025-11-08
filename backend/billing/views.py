@@ -6,6 +6,8 @@ from rest_framework.response import Response
 from django.conf import settings
 from django.utils import timezone
 from django.db.models import Q
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
 from .models import Sweet, Invoice
 from .serializers import SweetSerializer, InvoiceSerializer
@@ -161,12 +163,24 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
     
-    @decorators.action(detail=False, methods=["post"])
+    @decorators.action(detail=False, methods=["post", "options"])
     def verify_access(self, request):
         """
         Verify access password for general application access.
         Returns success status if password matches.
         """
+        import logging
+        logger = logging.getLogger('billing')
+        
+        # Handle OPTIONS preflight request
+        if request.method == 'OPTIONS':
+            response = Response()
+            response['Access-Control-Allow-Origin'] = request.META.get('HTTP_ORIGIN', '*')
+            response['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+            response['Access-Control-Allow-Headers'] = 'Content-Type'
+            response['Access-Control-Max-Age'] = '86400'
+            return response
+        
         password = request.data.get('password', '').strip()
         # Simple password check - in production, use proper authentication
         access_password = getattr(settings, 'ACCESS_PASSWORD', None)
@@ -174,9 +188,28 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         if access_password is None:
             access_password = getattr(settings, 'ADMIN_PASSWORD', 'Lalji@2025')
         
+        # Log the request origin for debugging
+        origin = request.META.get('HTTP_ORIGIN', 'No origin header')
+        referer = request.META.get('HTTP_REFERER', 'No referer')
+        logger.info(f"verify_access request from origin: {origin}, referer: {referer}")
+        logger.info(f"Request method: {request.method}, Content-Type: {request.content_type}")
+        logger.info(f"CORS_ALLOWED_ORIGINS: {getattr(settings, 'CORS_ALLOWED_ORIGINS', [])}")
+        logger.info(f"CORS_ALLOW_ALL_ORIGINS: {getattr(settings, 'CORS_ALLOW_ALL_ORIGINS', False)}")
+        
         if password == access_password:
-            return Response({'success': True, 'message': 'Access granted'})
-        return Response({'success': False, 'message': 'Invalid password'}, status=403)
+            logger.info("Access granted - password match")
+            response = Response({'success': True, 'message': 'Access granted'})
+            # Add CORS headers manually as backup
+            if origin and origin != 'No origin header':
+                response['Access-Control-Allow-Origin'] = origin
+            return response
+        
+        logger.warning(f"Access denied - password mismatch (received length: {len(password)}, expected: {len(access_password) if access_password else 0})")
+        response = Response({'success': False, 'message': 'Invalid password'}, status=403)
+        # Add CORS headers manually as backup
+        if origin and origin != 'No origin header':
+            response['Access-Control-Allow-Origin'] = origin
+        return response
     
     @decorators.action(detail=False, methods=["post"])
     def verify_admin(self, request):

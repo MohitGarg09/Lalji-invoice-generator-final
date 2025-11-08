@@ -185,6 +185,8 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 50,
+    # Disable CSRF for API views (DRF handles authentication separately)
+    'DEFAULT_AUTHENTICATION_CLASSES': [],
 }
 
 # CORS (configure strict origins in production)
@@ -207,6 +209,17 @@ CORS_ALLOW_HEADERS = [
     'x-csrftoken',
     'x-requested-with',
 ]
+# Allow all methods
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+# Expose headers
+CORS_EXPOSE_HEADERS = ['content-type', 'x-csrftoken']
 
 # Access password for general application access (required to use the app)
 # In production, use proper authentication system
