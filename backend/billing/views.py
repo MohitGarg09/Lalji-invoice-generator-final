@@ -175,40 +175,78 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         # Handle OPTIONS preflight request
         if request.method == 'OPTIONS':
             response = Response()
-            response['Access-Control-Allow-Origin'] = request.META.get('HTTP_ORIGIN', '*')
+            origin = request.META.get('HTTP_ORIGIN', '*')
+            response['Access-Control-Allow-Origin'] = origin
             response['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
             response['Access-Control-Allow-Headers'] = 'Content-Type'
+            response['Access-Control-Allow-Credentials'] = 'true'
             response['Access-Control-Max-Age'] = '86400'
             return response
         
-        password = request.data.get('password', '').strip()
-        # Simple password check - in production, use proper authentication
+        # Get origin for CORS headers
+        origin = request.META.get('HTTP_ORIGIN', '*')
+        
+        # Get password from request - handle different data types and encoding
+        try:
+            # Try to get password from request.data (DRF parsed JSON)
+            password_raw = request.data.get('password', '')
+            
+            # Handle different data types
+            if isinstance(password_raw, bytes):
+                password_raw = password_raw.decode('utf-8')
+            elif not isinstance(password_raw, str):
+                password_raw = str(password_raw)
+            
+            # Normalize password: strip whitespace and newlines
+            password = password_raw.strip().replace('\r', '').replace('\n', '')
+            
+        except Exception as e:
+            logger.error(f"Error parsing password from request: {e}")
+            password = ''
+        
+        # Get access password from settings
         access_password = getattr(settings, 'ACCESS_PASSWORD', None)
         # If ACCESS_PASSWORD is not set, fall back to ADMIN_PASSWORD for backward compatibility
         if access_password is None:
             access_password = getattr(settings, 'ADMIN_PASSWORD', 'Lalji@2025')
         
-        # Log the request origin for debugging
-        origin = request.META.get('HTTP_ORIGIN', 'No origin header')
+        # Normalize access password as well
+        if isinstance(access_password, bytes):
+            access_password = access_password.decode('utf-8')
+        elif not isinstance(access_password, str):
+            access_password = str(access_password)
+        access_password = access_password.strip().replace('\r', '').replace('\n', '')
+        
+        # Log the request for debugging (but don't log actual passwords in production)
         referer = request.META.get('HTTP_REFERER', 'No referer')
+        user_agent = request.META.get('HTTP_USER_AGENT', 'No user agent')
         logger.info(f"verify_access request from origin: {origin}, referer: {referer}")
         logger.info(f"Request method: {request.method}, Content-Type: {request.content_type}")
+        logger.info(f"User-Agent: {user_agent[:100]}")  # Log first 100 chars of user agent
+        logger.info(f"Password received length: {len(password)}, expected length: {len(access_password)}")
         logger.info(f"CORS_ALLOWED_ORIGINS: {getattr(settings, 'CORS_ALLOWED_ORIGINS', [])}")
         logger.info(f"CORS_ALLOW_ALL_ORIGINS: {getattr(settings, 'CORS_ALLOW_ALL_ORIGINS', False)}")
         
+        # Compare passwords (case-sensitive exact match after normalization)
         if password == access_password:
             logger.info("Access granted - password match")
             response = Response({'success': True, 'message': 'Access granted'})
-            # Add CORS headers manually as backup
-            if origin and origin != 'No origin header':
-                response['Access-Control-Allow-Origin'] = origin
+            # Always set CORS headers
+            response['Access-Control-Allow-Origin'] = origin
+            response['Access-Control-Allow-Credentials'] = 'true'
             return response
         
-        logger.warning(f"Access denied - password mismatch (received length: {len(password)}, expected: {len(access_password) if access_password else 0})")
+        # Log detailed mismatch info for debugging
+        logger.warning(f"Access denied - password mismatch")
+        logger.warning(f"Received password (first 10 chars): {repr(password[:10]) if len(password) > 0 else 'EMPTY'}")
+        logger.warning(f"Expected password (first 10 chars): {repr(access_password[:10]) if len(access_password) > 0 else 'EMPTY'}")
+        logger.warning(f"Password lengths - received: {len(password)}, expected: {len(access_password)}")
+        logger.warning(f"Password bytes comparison: {password.encode('utf-8') == access_password.encode('utf-8')}")
+        
         response = Response({'success': False, 'message': 'Invalid password'}, status=403)
-        # Add CORS headers manually as backup
-        if origin and origin != 'No origin header':
-            response['Access-Control-Allow-Origin'] = origin
+        # Always set CORS headers even for error responses
+        response['Access-Control-Allow-Origin'] = origin
+        response['Access-Control-Allow-Credentials'] = 'true'
         return response
     
     @decorators.action(detail=False, methods=["post"])

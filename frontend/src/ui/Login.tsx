@@ -17,11 +17,39 @@ export default function Login({ onLoginSuccess }: LoginProps) {
     setLoading(true)
 
     try {
+      // Normalize password: trim whitespace and ensure it's a clean string
+      const normalizedPassword = password.trim()
+      
+      if (!normalizedPassword) {
+        setError('Please enter a password')
+        setLoading(false)
+        return
+      }
+
       const response = await fetch(`${API_BASE}/invoices/verify_access/`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: password }),
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({ password: normalizedPassword }),
       })
+
+      // Check if response is ok before trying to parse JSON
+      if (!response.ok) {
+        // Try to get error message from response
+        let errorMessage = 'Invalid password'
+        try {
+          const errorData = await response.json()
+          errorMessage = errorData.message || errorMessage
+        } catch (e) {
+          // If response is not JSON, use status text
+          errorMessage = response.statusText || `Server error (${response.status})`
+        }
+        setError(errorMessage)
+        setLoading(false)
+        return
+      }
 
       const data = await response.json()
       
@@ -32,9 +60,16 @@ export default function Login({ onLoginSuccess }: LoginProps) {
       } else {
         setError(data.message || 'Invalid password')
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login error:', error)
-      setError('Failed to verify password. Please try again.')
+      // Provide more specific error messages
+      if (error.message?.includes('Failed to fetch') || error.message?.includes('NetworkError')) {
+        setError('Cannot connect to server. Please check your internet connection and try again.')
+      } else if (error.message?.includes('CORS')) {
+        setError('CORS error: Server configuration issue. Please contact administrator.')
+      } else {
+        setError(`Failed to verify password: ${error.message || 'Unknown error'}. Please try again.`)
+      }
     } finally {
       setLoading(false)
     }
