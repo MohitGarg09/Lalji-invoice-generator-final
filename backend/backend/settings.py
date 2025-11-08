@@ -188,12 +188,10 @@ REST_FRAMEWORK = {
 }
 
 # CORS (configure strict origins in production)
-cors_origins = os.environ.get('CORS_ALLOWED_ORIGINS')
-if cors_origins:
-    CORS_ALLOW_ALL_ORIGINS = False
-    CORS_ALLOWED_ORIGINS = [o.strip() for o in cors_origins.split(',') if o.strip()]
-else:
-    CORS_ALLOW_ALL_ORIGINS = True
+# Allow specific origins from environment variable, or allow all if not set (development)
+CORS_ALLOWED_ORIGINS = [o.strip() for o in os.environ.get('CORS_ALLOWED_ORIGINS', '').split(',') if o.strip()] if os.environ.get('CORS_ALLOWED_ORIGINS') else []
+# If CORS_ALLOWED_ORIGINS is not set or empty, allow all origins (for development)
+CORS_ALLOW_ALL_ORIGINS = not bool(CORS_ALLOWED_ORIGINS)
 
 # Access password for general application access (required to use the app)
 # In production, use proper authentication system
