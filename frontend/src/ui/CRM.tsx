@@ -52,7 +52,6 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
   const [adminPassword, setAdminPassword] = useState('')
   const [showPasswordModal, setShowPasswordModal] = useState(false)
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null)
-  const [deletingInvoiceId, setDeletingInvoiceId] = useState<number | null>(null)
   // Report state
   const [reportVisible, setReportVisible] = useState(false)
   const [reportLoading, setReportLoading] = useState(false)
@@ -231,7 +230,6 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
       
       alert('Invoice deleted successfully')
       fetchInvoices()
-      setDeletingInvoiceId(null)
     } catch (error) {
       console.error('Error deleting invoice:', error)
       alert('Failed to delete invoice')
