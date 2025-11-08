@@ -2,6 +2,12 @@ import React, { useState } from 'react'
 
 const API_BASE = (import.meta as any)?.env?.VITE_API_BASE || 'http://127.0.0.1:8000/api'
 
+// Log API base URL for debugging (only in development or if localhost)
+if (API_BASE.includes('127.0.0.1') || API_BASE.includes('localhost')) {
+  console.warn('⚠️ Using localhost API URL. Make sure VITE_API_BASE is set in production!')
+}
+console.log('API Base URL:', API_BASE)
+
 type LoginProps = {
   onLoginSuccess: () => void
 }
@@ -26,7 +32,10 @@ export default function Login({ onLoginSuccess }: LoginProps) {
         return
       }
 
-      const response = await fetch(`${API_BASE}/invoices/verify_access/`, {
+      const apiUrl = `${API_BASE}/invoices/verify_access/`
+      console.log('Attempting login request to:', apiUrl)
+
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -62,9 +71,19 @@ export default function Login({ onLoginSuccess }: LoginProps) {
       }
     } catch (error: any) {
       console.error('Login error:', error)
+      console.error('API URL attempted:', `${API_BASE}/invoices/verify_access/`)
+      
+      // Check if using localhost in production
+      const isLocalhost = API_BASE.includes('127.0.0.1') || API_BASE.includes('localhost')
+      const isProduction = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'
+      
       // Provide more specific error messages
       if (error.message?.includes('Failed to fetch') || error.message?.includes('NetworkError')) {
-        setError('Cannot connect to server. Please check your internet connection and try again.')
+        if (isLocalhost && isProduction) {
+          setError('Configuration error: API URL not set. Please configure VITE_API_BASE environment variable.')
+        } else {
+          setError(`Cannot connect to server at ${API_BASE}. Please check your internet connection and server status.`)
+        }
       } else if (error.message?.includes('CORS')) {
         setError('CORS error: Server configuration issue. Please contact administrator.')
       } else {
