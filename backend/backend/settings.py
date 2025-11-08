@@ -53,12 +53,11 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     # Local apps
-    'billing',
+    'billing.apps.BillingConfig',  # Use app config to ensure signals are loaded
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # Serve static files in production
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -67,6 +66,13 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# Add WhiteNoise middleware if available (for production static file serving)
+try:
+    import whitenoise
+    MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
+except ImportError:
+    pass  # WhiteNoise not installed, skip (fine for development)
 
 ROOT_URLCONF = 'backend.urls'
 
@@ -154,8 +160,12 @@ STATIC_ROOT = os.environ.get('STATIC_ROOT', os.path.join(BASE_DIR, 'staticfiles'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.environ.get('MEDIA_ROOT', os.path.join(BASE_DIR, 'media'))
 
-# WhiteNoise configuration for static files
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# WhiteNoise configuration for static files (only if whitenoise is installed)
+try:
+    import whitenoise
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+except ImportError:
+    pass  # WhiteNoise not installed, use default storage
 
 # Optional additional static dirs (e.g., for logo)
 STATICFILES_DIRS = [p for p in [os.path.join(BASE_DIR, 'static')] if os.path.isdir(p)]
@@ -190,3 +200,15 @@ ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'Admin@2025')
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Logging configuration
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {"console": {"class": "logging.StreamHandler"}},
+    "root": {"handlers": ["console"], "level": "INFO"},
+    "loggers": {
+        "billing": {"handlers": ["console"], "level": "INFO", "propagate": True},
+        "billing.signals": {"handlers": ["console"], "level": "INFO", "propagate": True},
+    },
+}
