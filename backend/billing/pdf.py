@@ -70,7 +70,7 @@ def render_invoice_pdf(invoice):
         c.drawString(left_margin, y-30, "LALJI CATERERS")
         c.setFont(*ROW_FONT)
         c.setFillColor(colors.HexColor('#495057'))
-        c.drawString(left_margin, y - 42, "GMC college Yamuna sankul, New Radhakisan Plots, Akola, Maharashtra 444001")
+        c.drawString(left_margin, y - 42, "GMC college Yamuna sankul, New Radhakisan Plots, Akola")
         c.drawString(left_margin, y - 54, "Mobile: 9422959713")
 
         # --- Logo (Right Side) ---
