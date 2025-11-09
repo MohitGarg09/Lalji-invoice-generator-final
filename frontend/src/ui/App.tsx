@@ -36,6 +36,7 @@ export default function InvoiceApp() {
   const [creating, setCreating] = useState(false)
   const [createdId, setCreatedId] = useState<number | null>(null)
   const [dmNo, setDmNo] = useState('')
+  const [sendingWhatsApp, setSendingWhatsApp] = useState(false)
   // Load sweets from backend
   useEffect(() => {
     fetch(`${API_BASE}/sweets/`)
@@ -323,14 +324,14 @@ export default function InvoiceApp() {
       // Trigger CRM refresh
       setCrmRefreshTrigger(prev => prev + 1);
       
-      // Reset form after saving
+      // Reset form after saving (keep phone number in case user wants to send via WhatsApp)
       setCustomerName('');
       setDmNo('');
       setDiscountPct('0');
       setBillType('Non-GST');
       setPaymentMode('credit');
       setItems([{}]);
-      setCreatedId(null);
+      // Don't reset phone number or createdId - user might want to send via WhatsApp
     } catch (e) {
       console.error(e);
       alert("Failed to create invoice: " + e);
@@ -349,6 +350,236 @@ export default function InvoiceApp() {
     setTimeout(() => {
       setCrmRefreshTrigger(prev => prev + 1);
     }, 1000);
+  }
+
+  // Fallback method to share PDF via WhatsApp (downloads PDF and opens WhatsApp)
+  const shareViaWhatsAppFallback = async (
+    pdfBlob: Blob,
+    fileName: string
+  ) => {
+    // Download PDF first
+    const downloadUrl = URL.createObjectURL(pdfBlob)
+    const a = document.createElement('a')
+    a.href = downloadUrl
+    a.download = fileName
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(downloadUrl)
+    
+    // Open WhatsApp Web (user will select contact and attach file)
+    // Open WhatsApp Web directly
+    window.open('https://web.whatsapp.com', '_blank')
+    
+    // Show instruction
+    alert('PDF downloaded successfully!\n\nWhatsApp Web is opening. Please:\n1. Select the contact\n2. Attach the downloaded PDF file from your downloads folder\n3. Send the message')
+  }
+
+
+  // Send invoice via WhatsApp
+  async function sendViaWhatsApp() {
+    setSendingWhatsApp(true)
+    
+    try {
+      let invoiceId = createdId
+      
+      // If invoice is not created yet, create it first
+      if (!invoiceId) {
+        // Basic validation
+        if (!customerName.trim()) {
+          alert('Customer name is required')
+          setSendingWhatsApp(false)
+          return
+        }
+        
+        if (!dmNo.trim()) {
+          alert('DM No. is required')
+          setSendingWhatsApp(false)
+          return
+        }
+        
+        if (items.length === 0 || !items.some(it => it.sweetName || it.sweetId)) {
+          alert('Add at least one sweet to create invoice')
+          setSendingWhatsApp(false)
+          return
+        }
+
+        // Create invoice first (reuse createInvoice logic)
+        setCreating(true)
+        const discountValue = Math.min(Math.max(parseFloat(discountPct || '0'), 0), 100)
+        
+        const updatedItems = [...items]
+        const workingSweets: Sweet[] = [...sweets]
+
+        // Ensure all typed sweets exist
+        for (let i = 0; i < updatedItems.length; i++) {
+          const it = updatedItems[i]
+          if (!it.sweetId && it.sweetName?.trim()) {
+            let existing = workingSweets.find(
+              (s) => s.name.toLowerCase() === it.sweetName!.toLowerCase()
+            )
+
+            if (!existing) {
+              const res = await fetch(`${API_BASE}/sweets/`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  name: it.sweetName!.trim(),
+                  sweet_type: it.mode || "weight",
+                }),
+              })
+
+              if (!res.ok) {
+                throw new Error(`Failed to create sweet: ${await res.text()}`)
+              }
+
+              const newSweet = await res.json()
+              if (newSweet) {
+                existing = newSweet
+                workingSweets.push(newSweet)
+                setSweets((prev) => [...prev, newSweet])
+              }
+            }
+
+            if (existing) {
+              it.sweetId = existing.id
+              it.mode = it.mode || existing.sweet_type
+            }
+          }
+        }
+
+        // Calculate amounts
+        updatedItems.forEach((it) => {
+          const sweet = workingSweets.find((s) => s.id === it.sweetId)
+          if (!sweet) return
+
+          const mode = it.mode || sweet.sweet_type
+          const unitPrice =
+            it.unit_price_override && it.unit_price_override.trim() !== ""
+              ? parseFloat(it.unit_price_override)
+              : mode === "weight"
+              ? parseFloat(sweet.price_per_kg || "0")
+              : parseFloat(sweet.price_per_unit || "0")
+
+          if (mode === "weight") {
+            const gross = parseFloat((it.gross_weight_kg || "0").trim()) || 0
+            const tray = parseFloat((it.tray_weight_kg || "0").trim()) || 0
+            const netKg = Math.max(gross - tray, 0)
+            it.amount = parseFloat((netKg * unitPrice).toFixed(2))
+          } else {
+            const count = parseFloat((it.count || "0").trim()) || 0
+            it.amount = parseFloat((count * unitPrice).toFixed(2))
+          }
+        })
+
+        // Prepare payload
+        const payload = {
+          customer_name: customerName.trim(),
+          dm_no: dmNo.trim() || undefined,
+          discount_percent: discountValue.toString(),
+          payment_mode: paymentMode,
+          bill_type: billType,
+          items: updatedItems
+            .filter((it) => it.sweetId)
+            .map((it) => {
+              const sweet = workingSweets.find((s) => s.id === it.sweetId)!
+              const mode = it.mode || sweet.sweet_type
+              if (mode === "weight") {
+                return {
+                  sweet: sweet.id,
+                  gross_weight_kg: parseFloat(it.gross_weight_kg || "0"),
+                  tray_weight_kg: parseFloat(it.tray_weight_kg || "0"),
+                  unit_price_override: it.unit_price_override
+                    ? parseFloat(it.unit_price_override)
+                    : undefined,
+                }
+              }
+              return {
+                sweet: sweet.id,
+                count: parseFloat(it.count || "0"),
+                unit_price_override: it.unit_price_override
+                  ? parseFloat(it.unit_price_override)
+                  : undefined,
+              }
+            }),
+        }
+
+        // Send invoice to backend
+        const res = await fetch(`${API_BASE}/invoices/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        })
+
+        if (!res.ok) throw new Error(await res.text())
+
+        const data = await res.json()
+        invoiceId = data.id
+        setCreatedId(data.id)
+        setCreating(false)
+      }
+
+      // Fetch PDF as blob from the backend
+      const pdfUrl = `${API_BASE}/invoices/${invoiceId}/pdf/`
+      const pdfResponse = await fetch(pdfUrl)
+      if (!pdfResponse.ok) {
+        throw new Error('Failed to fetch PDF')
+      }
+      
+      const pdfBlob = await pdfResponse.blob()
+      const pdfFile = new File([pdfBlob], `invoice_${invoiceId}.pdf`, { type: 'application/pdf' })
+      
+      // Create WhatsApp message
+      const message = `Hello ${customerName.trim()},\n\nYour invoice #${invoiceId} has been generated. Please find the invoice PDF attached.\n\nThank you for your business!`
+      
+      // Try to use Web Share API (best experience on mobile devices)
+      // Check if Web Share API is available
+      if (navigator.share) {
+        try {
+          // Try to share with file - this will work on mobile devices
+          await navigator.share({
+            files: [pdfFile],
+            title: `Invoice #${invoiceId} - ${customerName.trim()}`,
+            text: message,
+          })
+          
+          // Successfully shared via native share (WhatsApp will be an option on mobile)
+          // No need to show alert if user successfully shared
+        } catch (shareError: any) {
+          // User cancelled share dialog
+          if (shareError.name === 'AbortError') {
+            // User cancelled, don't do anything
+            setSendingWhatsApp(false)
+            return
+          }
+          
+          // Share failed (might not support files), use fallback
+          console.warn('Web Share API failed, using fallback method:', shareError)
+          await shareViaWhatsAppFallback(pdfBlob, pdfFile.name)
+        }
+      } else {
+        // Web Share API not available, use fallback
+        await shareViaWhatsAppFallback(pdfBlob, pdfFile.name)
+      }
+      
+      // Trigger CRM refresh
+      setCrmRefreshTrigger(prev => prev + 1)
+      
+      // Reset form after successful WhatsApp send
+      setCustomerName('')
+      setDmNo('')
+      setDiscountPct('0')
+      setBillType('Non-GST')
+      setPaymentMode('credit')
+      setItems([{}])
+      setCreatedId(null)
+      
+    } catch (e) {
+      console.error(e)
+      alert('Failed to send via WhatsApp: ' + e)
+    } finally {
+      setSendingWhatsApp(false)
+    }
   }
 
   // Show CRM if on CRM page
@@ -1004,22 +1235,52 @@ export default function InvoiceApp() {
             }}
           >
             <button
-              disabled={creating}
+              disabled={creating || sendingWhatsApp}
               onClick={createInvoice}
               style={{
                 padding: '14px 32px',
                 fontSize: '16px',
-                background: creating
+                background: creating || sendingWhatsApp
                   ? '#9ca3af'
                   : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                 color: 'white',
                 border: 'none',
                 borderRadius: '8px',
-                cursor: creating ? 'not-allowed' : 'pointer',
+                cursor: creating || sendingWhatsApp ? 'not-allowed' : 'pointer',
                 fontWeight: 600,
               }}
             >
               {creating ? 'Creating...' : 'Create Invoice'}
+            </button>
+
+            <button
+              disabled={creating || sendingWhatsApp}
+              onClick={sendViaWhatsApp}
+              style={{
+                padding: '14px 32px',
+                fontSize: '16px',
+                background: creating || sendingWhatsApp
+                  ? '#9ca3af'
+                  : 'linear-gradient(135deg, #25d366 0%, #128c7e 100%)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: creating || sendingWhatsApp ? 'not-allowed' : 'pointer',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+              }}
+              title="Send invoice via WhatsApp"
+            >
+              {sendingWhatsApp ? (
+                <>Sending...</>
+              ) : (
+                <>
+                  <span>📱</span>
+                  <span>Send via WhatsApp</span>
+                </>
+              )}
             </button>
 
             {createdId && (

@@ -75,12 +75,23 @@ def render_invoice_pdf(invoice):
 
         # --- Logo (Right Side) ---
         resolved_logo_path = os.environ.get('INVOICE_LOGO_PATH')
-        # keep backward compatibility: try static location inside project
+        # keep backward compatibility: try multiple locations
         if not resolved_logo_path:
-            # typical static path used by collectstatic on Render
-            candidate = os.path.join(os.getcwd(), "staticfiles", "images", "Lalji Logo.jpg")
-            if os.path.exists(candidate):
-                resolved_logo_path = candidate
+            # Try billing app directory first (most common location)
+            from django.conf import settings
+            billing_logo = os.path.join(settings.BASE_DIR, "billing", "Lalji Logo.jpg")
+            if os.path.exists(billing_logo):
+                resolved_logo_path = billing_logo
+            else:
+                # Try staticfiles location (for production)
+                candidate = os.path.join(os.getcwd(), "staticfiles", "images", "Lalji Logo.jpg")
+                if os.path.exists(candidate):
+                    resolved_logo_path = candidate
+                else:
+                    # Try current working directory
+                    cwd_logo = os.path.join(os.getcwd(), "Lalji Logo.jpg")
+                    if os.path.exists(cwd_logo):
+                        resolved_logo_path = cwd_logo
 
         logo_img = _safe_image_reader(resolved_logo_path)
         if logo_img:
