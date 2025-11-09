@@ -324,32 +324,20 @@ export default function InvoiceApp() {
       // Trigger CRM refresh
       setCrmRefreshTrigger(prev => prev + 1);
       
-      // Reset form after saving (keep phone number in case user wants to send via WhatsApp)
+      // Reset form after saving
       setCustomerName('');
       setDmNo('');
       setDiscountPct('0');
       setBillType('Non-GST');
       setPaymentMode('credit');
       setItems([{}]);
-      // Don't reset phone number or createdId - user might want to send via WhatsApp
+      setCreatedId(null);
     } catch (e) {
       console.error(e);
       alert("Failed to create invoice: " + e);
     } finally {
       setCreating(false);
     }
-  }
-
-  const download = (url: string) => {
-    const a = document.createElement('a')
-    a.href = url
-    a.target = '_blank'
-    a.click()
-    
-    // Trigger CRM refresh after PDF download
-    setTimeout(() => {
-      setCrmRefreshTrigger(prev => prev + 1);
-    }, 1000);
   }
 
   // Fallback method to share PDF via WhatsApp (downloads PDF and opens WhatsApp)
@@ -882,6 +870,8 @@ export default function InvoiceApp() {
   />
 </div>
 
+          {/* Spacing after DM No. */}
+          <div style={{ marginBottom: '32px' }}></div>
 
           {/* Items Table */}
           <div
@@ -1235,18 +1225,18 @@ export default function InvoiceApp() {
             }}
           >
             <button
-              disabled={creating || sendingWhatsApp}
+              disabled={creating || sendingWhatsApp || !customerName.trim() || !dmNo.trim() || items.length === 0 || !items.some(it => it.sweetName || it.sweetId)}
               onClick={createInvoice}
               style={{
                 padding: '14px 32px',
                 fontSize: '16px',
-                background: creating || sendingWhatsApp
+                background: creating || sendingWhatsApp || !customerName.trim() || !dmNo.trim() || items.length === 0 || !items.some(it => it.sweetName || it.sweetId)
                   ? '#9ca3af'
                   : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                 color: 'white',
                 border: 'none',
                 borderRadius: '8px',
-                cursor: creating || sendingWhatsApp ? 'not-allowed' : 'pointer',
+                cursor: creating || sendingWhatsApp || !customerName.trim() || !dmNo.trim() || items.length === 0 || !items.some(it => it.sweetName || it.sweetId) ? 'not-allowed' : 'pointer',
                 fontWeight: 600,
               }}
             >
@@ -1254,57 +1244,75 @@ export default function InvoiceApp() {
             </button>
 
             <button
-              disabled={creating || sendingWhatsApp}
+              disabled={creating || sendingWhatsApp || !customerName.trim() || !dmNo.trim() || items.length === 0 || !items.some(it => it.sweetName || it.sweetId)}
               onClick={sendViaWhatsApp}
               style={{
                 padding: '14px 32px',
                 fontSize: '16px',
-                background: creating || sendingWhatsApp
+                background: creating || sendingWhatsApp || !customerName.trim() || !dmNo.trim() || items.length === 0 || !items.some(it => it.sweetName || it.sweetId)
                   ? '#9ca3af'
                   : 'linear-gradient(135deg, #25d366 0%, #128c7e 100%)',
                 color: 'white',
                 border: 'none',
                 borderRadius: '8px',
-                cursor: creating || sendingWhatsApp ? 'not-allowed' : 'pointer',
+                cursor: creating || sendingWhatsApp || !customerName.trim() || !dmNo.trim() || items.length === 0 || !items.some(it => it.sweetName || it.sweetId) ? 'not-allowed' : 'pointer',
                 fontWeight: 600,
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
               }}
-              title="Send invoice via WhatsApp"
+              title="Create invoice and send via WhatsApp"
             >
               {sendingWhatsApp ? (
-                <>Sending...</>
+                <>Creating & Sending...</>
               ) : (
                 <>
                   <span>📱</span>
-                  <span>Send via WhatsApp</span>
+                  <span>Create Invoice and Send via WhatsApp</span>
                 </>
               )}
             </button>
+          </div>
 
-            {createdId && (
-              <>
-                <button
-                  onClick={() =>
-                    download(`${API_BASE}/invoices/${createdId}/pdf/`)
-                  }
-                  style={{
-                    padding: '14px 32px',
-                    fontSize: '16px',
-                    background:
-                      'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontWeight: 600,
-                  }}
-                >
-                  Download PDF
-                </button>
-              </>
-            )}
+          {/* Footer with Developer Credits */}
+          <div
+            style={{
+              marginTop: '60px',
+              paddingTop: '32px',
+              borderTop: '2px solid #e5e7eb',
+              textAlign: 'center',
+            }}
+          >
+            <div
+              style={{
+                fontSize: '14px',
+                color: '#6b7280',
+                lineHeight: '1.8',
+              }}
+            >
+              <div style={{ marginBottom: '8px' }}>
+                Made with ❤️ by <strong style={{ color: '#374151' }}>Mohit Garg</strong>
+              </div>
+              <div
+                style={{
+                  fontSize: '12px',
+                  color: '#9ca3af',
+                  marginTop: '12px',
+                  paddingTop: '12px',
+                  borderTop: '1px solid #e5e7eb',
+                }}
+              >
+                <div style={{ marginBottom: '4px' }}>
+                  © {new Date().getFullYear()} Lalji Invoice Generator. All rights reserved by Lalji Caterers.
+                </div>
+                <div style={{ marginBottom: '4px' }}>
+                  This software is proprietary and confidential.
+                </div>
+                <div>
+                  Unauthorized copying, distribution, or use is strictly prohibited.
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
