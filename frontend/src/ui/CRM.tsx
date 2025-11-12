@@ -64,6 +64,8 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
   const [showSettings, setShowSettings] = useState(false)
   const [resetPassword, setResetPassword] = useState('')
   const [resetting, setResetting] = useState(false)
+  const [showResetPassword, setShowResetPassword] = useState(false)
+  const [showAdminPassword, setShowAdminPassword] = useState(false)
 
   // Products Management state
   const [showProductsModal, setShowProductsModal] = useState(false)
@@ -932,22 +934,42 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
               <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#6b7280' }}>
                 Enter admin password to enable editing
               </p>
-              <input
-                type="password"
-                placeholder="Enter password"
-                value={adminPassword}
-                onChange={(e) => setAdminPassword(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleAdminLogin()}
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  fontSize: '14px',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '6px',
-                  marginBottom: '16px',
+              <div style={{ position: 'relative', marginBottom: '16px' }}>
+                <input
+                  type={showAdminPassword ? 'text' : 'password'}
+                  placeholder="Enter password"
+                  value={adminPassword}
+                  onChange={(e) => setAdminPassword(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleAdminLogin()}
+                  style={{
+                    width: '100%',
+                    padding: '12px 40px 12px 12px',
+                    fontSize: '14px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '6px',
+                    boxSizing: 'border-box',
                   outline: 'none',
                 }}
               />
+              <button
+                type="button"
+                onClick={() => setShowAdminPassword(!showAdminPassword)}
+                style={{
+                  position: 'absolute',
+                  right: '8px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '16px',
+                  color: '#6b7280',
+                  padding: '4px',
+                }}
+              >
+                {showAdminPassword ? '🙈' : '👁️'}
+              </button>
+            </div>
               <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
                 <button
                   onClick={() => {
@@ -1757,20 +1779,41 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
                   <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#374151', marginBottom: '6px' }}>
                     Admin Password
                   </label>
-                  <input
-                    type="password"
-                    value={resetPassword}
-                    onChange={(e) => setResetPassword(e.target.value)}
-                    placeholder="Enter admin password"
-                    style={{
-                      width: '100%',
-                      padding: '10px 12px',
-                      fontSize: '14px',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '6px',
-                      outline: 'none',
-                    }}
-                  />
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type={showResetPassword ? 'text' : 'password'}
+                      value={resetPassword}
+                      onChange={(e) => setResetPassword(e.target.value)}
+                      placeholder="Enter admin password"
+                      style={{
+                        width: '100%',
+                        padding: '10px 40px 10px 12px',
+                        fontSize: '14px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '6px',
+                        outline: 'none',
+                        boxSizing: 'border-box',
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowResetPassword(!showResetPassword)}
+                      style={{
+                        position: 'absolute',
+                        right: '8px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontSize: '16px',
+                        color: '#6b7280',
+                        padding: '4px',
+                      }}
+                    >
+                      {showResetPassword ? '🙈' : '👁️'}
+                    </button>
+                  </div>
                 </div>
                 
                 <button

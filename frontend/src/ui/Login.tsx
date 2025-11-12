@@ -16,6 +16,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -146,25 +147,46 @@ export default function Login({ onLoginSuccess }: LoginProps) {
             >
               Password
             </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value)
-                setError('')
-              }}
-              placeholder="Enter access password"
-              autoFocus
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                fontSize: '15px',
-                border: error ? '2px solid #ef4444' : '2px solid #e5e7eb',
-                borderRadius: '8px',
+            <div style={{ position: 'relative' }}>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value)
+                  setError('')
+                }}
+                placeholder="Enter access password"
+                autoFocus
+                style={{
+                  width: '100%',
+                  padding: '12px 40px 12px 16px',
+                  fontSize: '15px',
+                  border: error ? '2px solid #ef4444' : '2px solid #e5e7eb',
+                  borderRadius: '8px',
+                  boxSizing: 'border-box',
                 outline: 'none',
                 transition: 'border-color 0.2s',
               }}
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              style={{
+                position: 'absolute',
+                right: '12px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '18px',
+                color: '#6b7280',
+                padding: '4px',
+              }}
+            >
+              {showPassword ? '🙈' : '👁️'}
+            </button>
+          </div>
             {error && (
               <p
                 style={{

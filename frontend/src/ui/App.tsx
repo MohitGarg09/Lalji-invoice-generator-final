@@ -723,9 +723,9 @@ export default function InvoiceApp() {
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   e.preventDefault()
-                  // Focus on payment mode toggle
-                  const paymentToggle = document.querySelector('input[name="paymentMode"]') as HTMLElement
-                  paymentToggle?.focus()
+                  // Skip toggles and go directly to DM No
+                  const dmNoInput = document.querySelector('input[placeholder="Enter DM number (required)"]') as HTMLElement
+                  dmNoInput?.focus()
                 }
               }}
               style={{
@@ -791,9 +791,10 @@ export default function InvoiceApp() {
     onKeyDown={(e) => {
       if (e.key === 'Enter') {
         e.preventDefault()
-        // Focus on GST toggle
-        const gstToggle = document.querySelector('input[name="billType"]') as HTMLElement
-        gstToggle?.focus()
+        // Focus on bill type toggle (first radio button)
+        const billTypeToggle = document.querySelector('input[name="billType"][checked]') as HTMLElement || 
+                              document.querySelector('input[name="billType"]') as HTMLElement
+        billTypeToggle?.focus()
       }
     }}
     style={{
@@ -877,9 +878,9 @@ export default function InvoiceApp() {
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
               e.preventDefault()
-              // Focus on first sweet input
-              const firstSweetInput = document.querySelector('input[placeholder="Type sweet name"]') as HTMLElement
-              firstSweetInput?.focus()
+              // Focus on DM No input
+              const dmNoInput = document.querySelector('input[placeholder="Enter DM number (required)"]') as HTMLElement
+              dmNoInput?.focus()
             }
           }}
           style={{
@@ -947,6 +948,14 @@ export default function InvoiceApp() {
     placeholder="Enter DM number (required)"
     value={dmNo}
     onChange={(e) => setDmNo(e.target.value)}
+    onKeyDown={(e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault()
+        // Focus on first sweet input
+        const firstSweetInput = document.querySelector('input[placeholder="Type sweet name"]') as HTMLElement
+        firstSweetInput?.focus()
+      }
+    }}
     required
     style={{
       width: '100%',
@@ -1027,6 +1036,22 @@ export default function InvoiceApp() {
                               // Auto-fill unit price if available
                               unit_price_override: itemType === 'weight' ? pricePerKg : pricePerUnit,
                             })
+                            
+                            // Auto-focus to appropriate input after selection
+                            if (selectedItem) {
+                              setTimeout(() => {
+                                const currentRow = document.querySelector(`tr:nth-child(${idx + 1})`)
+                                if (itemType === 'weight') {
+                                  // Focus on gross weight input
+                                  const grossInput = currentRow?.querySelector('input[placeholder="0.000"]') as HTMLElement
+                                  grossInput?.focus()
+                                } else {
+                                  // Focus on count input
+                                  const countInput = currentRow?.querySelector('input[type="number"]:not([placeholder="0.000"])') as HTMLElement
+                                  countInput?.focus()
+                                }
+                              }, 100)
+                            }
                           }}
                           placeholder="Type sweet name"
                           style={inputStyle}
