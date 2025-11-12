@@ -13,9 +13,15 @@ class Sweet(models.Model):
     sweet_type = models.CharField(max_length=10, choices=TYPE_CHOICES, default='weight')
     price_per_kg = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     price_per_unit = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    usage_count = models.PositiveIntegerField(default=0)  # Track how often this sweet is used
+    last_used = models.DateTimeField(null=True, blank=True)  # Track when last used
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        ordering = ['-usage_count', '-last_used', 'name']  # Order by usage frequency, then recency, then name
 
 
 class Invoice(models.Model):

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import CRM from './CRM'
+import SweetDropdown from './SweetDropdown'
 
 type Sweet = {
   id: number
@@ -7,6 +8,9 @@ type Sweet = {
   sweet_type: 'weight' | 'count'
   price_per_kg?: string
   price_per_unit?: string
+  usage_count?: number
+  last_used?: string
+  created_at?: string
 }
 
 type InvoiceItemDraft = {
@@ -906,28 +910,19 @@ export default function InvoiceApp() {
                   return (
                     <tr key={idx} style={{ borderBottom: '1px solid #f3f4f6' }}>
                       <td style={{ padding: '12px 16px' }}>
-                        <input
-                          list={`sweets-list-${idx}`}
-                          placeholder="Type sweet name"
+                        <SweetDropdown
+                          sweets={sweets}
                           value={it.sweetName ?? sweet?.name ?? ''}
-                          onChange={(e) => {
-                            const name = e.target.value
-                            const found = sweets.find(
-                              (s) => s.name.toLowerCase() === name.toLowerCase()
-                            )
+                          onChange={(name, selectedSweet) => {
                             updateItem(idx, {
                               sweetName: name,
-                              sweetId: found?.id,
-                              mode: found ? it.mode ?? found.sweet_type : it.mode,
+                              sweetId: selectedSweet?.id,
+                              mode: selectedSweet ? it.mode ?? selectedSweet.sweet_type : it.mode,
                             })
                           }}
+                          placeholder="Type sweet name"
                           style={inputStyle}
                         />
-                        <datalist id={`sweets-list-${idx}`}>
-                          {sweets.map((s) => (
-                            <option key={s.id} value={s.name} />
-                          ))}
-                        </datalist>
                       </td>
 
                       <td style={{ padding: '12px 16px' }}>
