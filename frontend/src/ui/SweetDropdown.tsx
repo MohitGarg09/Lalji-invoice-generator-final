@@ -12,51 +12,80 @@ type Sweet = {
   created_at?: string
 }
 
+type ProductMaster = {
+  id: number
+  name: string
+  product_type: 'weight' | 'count'
+  price_per_kg?: string
+  price_per_unit?: string
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+type DropdownItem = Sweet | ProductMaster
+
 interface SweetDropdownProps {
   sweets: Sweet[]
+  products?: ProductMaster[]
   value: string
-  onChange: (value: string, sweet?: Sweet) => void
+  onChange: (value: string, item?: DropdownItem) => void
   placeholder?: string
   style?: React.CSSProperties
 }
 
-export default function SweetDropdown({ sweets, value, onChange, placeholder = "Type sweet name", style }: SweetDropdownProps) {
+export default function SweetDropdown({ sweets, products = [], value, onChange, placeholder = "Type sweet name", style }: SweetDropdownProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const [filteredSweets, setFilteredSweets] = useState<Sweet[]>([])
+  const [filteredItems, setFilteredItems] = useState<DropdownItem[]>([])
   const [highlightedIndex, setHighlightedIndex] = useState(-1)
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 })
   const inputRef = useRef<HTMLInputElement>(null)
 
-  // Sort sweets by popularity (usage_count desc, last_used desc, then name)
-  const sortedSweets = [...sweets].sort((a, b) => {
-    // First by usage count (descending)
-    const usageA = a.usage_count || 0
-    const usageB = b.usage_count || 0
-    if (usageA !== usageB) return usageB - usageA
-    
-    // Then by last used (descending)
-    if (a.last_used && b.last_used) {
-      return new Date(b.last_used).getTime() - new Date(a.last_used).getTime()
-    }
-    if (a.last_used && !b.last_used) return -1
-    if (!a.last_used && b.last_used) return 1
-    
-    // Finally by name (ascending)
-    return a.name.localeCompare(b.name)
-  })
+  // Helper function to check if item is a Sweet
+  const isSweet = (item: DropdownItem): item is Sweet => {
+    return 'sweet_type' in item
+  }
 
-  // Filter sweets based on input value
+  // Helper function to get item type
+  const getItemType = (item: DropdownItem): 'weight' | 'count' => {
+    return isSweet(item) ? item.sweet_type : item.product_type
+  }
+
+  // Combine and sort all items (products first, then sweets by popularity)
+  const sortedItems = [
+    // Products first (from master list)
+    ...products.filter(p => p.is_active).sort((a, b) => a.name.localeCompare(b.name)),
+    // Then sweets sorted by popularity
+    ...sweets.sort((a, b) => {
+      // First by usage count (descending)
+      const usageA = a.usage_count || 0
+      const usageB = b.usage_count || 0
+      if (usageA !== usageB) return usageB - usageA
+      
+      // Then by last used (descending)
+      if (a.last_used && b.last_used) {
+        return new Date(b.last_used).getTime() - new Date(a.last_used).getTime()
+      }
+      if (a.last_used && !b.last_used) return -1
+      if (!a.last_used && b.last_used) return 1
+      
+      // Finally by name (ascending)
+      return a.name.localeCompare(b.name)
+    })
+  ]
+
+  // Filter items based on input value
   useEffect(() => {
     if (!value.trim()) {
-      setFilteredSweets(sortedSweets.slice(0, 10)) // Show top 10 when empty
+      setFilteredItems(sortedItems.slice(0, 10)) // Show top 10 when empty
     } else {
-      const filtered = sortedSweets.filter(sweet =>
-        sweet.name.toLowerCase().includes(value.toLowerCase())
+      const filtered = sortedItems.filter(item =>
+        item.name.toLowerCase().includes(value.toLowerCase())
       )
-      setFilteredSweets(filtered.slice(0, 20)) // Show top 20 matches
+      setFilteredItems(filtered.slice(0, 20)) // Show top 20 matches
     }
     setHighlightedIndex(-1)
-  }, [value, sweets])
+  }, [value, sweets, products])
 
   // Calculate dropdown position
   const updateDropdownPosition = useCallback(() => {
@@ -80,9 +109,9 @@ export default function SweetDropdown({ sweets, value, onChange, placeholder = "
     setIsOpen(true)
   }
 
-  // Handle sweet selection
-  const handleSweetSelect = (sweet: Sweet) => {
-    onChange(sweet.name, sweet)
+  // Handle item selection
+  const handleItemSelect = (item: DropdownItem) => {
+    onChange(item.name, item)
     setIsOpen(false)
     inputRef.current?.blur()
   }
@@ -102,19 +131,19 @@ export default function SweetDropdown({ sweets, value, onChange, placeholder = "
       case 'ArrowDown':
         e.preventDefault()
         setHighlightedIndex(prev => 
-          prev < filteredSweets.length - 1 ? prev + 1 : 0
+          prev < filteredItems.length - 1 ? prev + 1 : 0
         )
         break
       case 'ArrowUp':
         e.preventDefault()
         setHighlightedIndex(prev => 
-          prev > 0 ? prev - 1 : filteredSweets.length - 1
+          prev > 0 ? prev - 1 : filteredItems.length - 1
         )
         break
       case 'Enter':
         e.preventDefault()
-        if (highlightedIndex >= 0 && filteredSweets[highlightedIndex]) {
-          handleSweetSelect(filteredSweets[highlightedIndex])
+        if (highlightedIndex >= 0 && filteredItems[highlightedIndex]) {
+          handleItemSelect(filteredItems[highlightedIndex])
         }
         break
       case 'Escape':
@@ -199,28 +228,30 @@ export default function SweetDropdown({ sweets, value, onChange, placeholder = "
             zIndex: 9999,
           }}
         >
-          {filteredSweets.length === 0 ? (
+          {filteredItems.length === 0 ? (
             <div style={{ padding: '12px 16px', color: '#6b7280', fontStyle: 'italic' }}>
-              No sweets found
+              No items found
             </div>
           ) : (
-            filteredSweets.map((sweet, index) => {
+            filteredItems.map((item: DropdownItem, index: number) => {
                 const isHighlighted = index === highlightedIndex
+                const isProduct = !isSweet(item)
                 
                 return (
                   <div
-                    key={sweet.id}
-                    onClick={() => handleSweetSelect(sweet)}
+                    key={`${isProduct ? 'product' : 'sweet'}-${item.id}`}
+                    onClick={() => handleItemSelect(item)}
                     style={{
                       padding: '12px 16px',
                       cursor: 'pointer',
                       backgroundColor: isHighlighted ? '#f3f4f6' : 'white',
-                      borderBottom: index < filteredSweets.length - 1 ? '1px solid #f3f4f6' : 'none',
+                      borderBottom: index < filteredItems.length - 1 ? '1px solid #f3f4f6' : 'none',
                     }}
                     onMouseEnter={() => setHighlightedIndex(index)}
                   >
                     <div style={{ fontWeight: 500, color: '#111827' }}>
-                      {sweet.name}
+                      {item.name}
+                      {isProduct && <span style={{ fontSize: '11px', color: '#6b7280', marginLeft: '8px' }}>(Master)</span>}
                     </div>
                   </div>
                 )

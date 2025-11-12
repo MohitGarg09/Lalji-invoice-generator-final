@@ -24,6 +24,35 @@ class Sweet(models.Model):
         ordering = ['-usage_count', '-last_used', 'name']  # Order by usage frequency, then recency, then name
 
 
+class ProductMaster(models.Model):
+    """
+    Master list of products that can be managed by admin.
+    This provides pre-configured products with default type and prices.
+    """
+    TYPE_WEIGHT = 'weight'
+    TYPE_COUNT = 'count'
+    TYPE_CHOICES = [
+        (TYPE_WEIGHT, 'By Weight'),
+        (TYPE_COUNT, 'By Count'),
+    ]
+
+    name = models.CharField(max_length=100, unique=True)
+    product_type = models.CharField(max_length=10, choices=TYPE_CHOICES, default='weight')
+    price_per_kg = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    price_per_unit = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    is_active = models.BooleanField(default=True)  # Allow admin to disable products
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.get_product_type_display()})"
+
+    class Meta:
+        ordering = ['name']
+        verbose_name = "Product Master"
+        verbose_name_plural = "Product Masters"
+
+
 class Invoice(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     customer_name = models.CharField(max_length=100, blank=True)

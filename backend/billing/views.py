@@ -9,8 +9,8 @@ from django.db.models import Q
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 
-from .models import Sweet, Invoice, InvoiceItem
-from .serializers import SweetSerializer, InvoiceSerializer
+from .models import Sweet, Invoice, InvoiceItem, ProductMaster
+from .serializers import SweetSerializer, InvoiceSerializer, ProductMasterSerializer
 from .pdf import render_invoice_pdf
 # Excel imports removed - using database-only storage
 # from .excel import (
@@ -88,6 +88,53 @@ class SweetViewSet(viewsets.ModelViewSet):
         popular_sweets = Sweet.objects.all().order_by('-usage_count', '-last_used', 'name')
         serializer = self.get_serializer(popular_sweets, many=True)
         return Response(serializer.data)
+
+
+# ---------------- Product Master ---------------- #
+class ProductMasterViewSet(viewsets.ModelViewSet):
+    queryset = ProductMaster.objects.filter(is_active=True).order_by("name")
+    serializer_class = ProductMasterSerializer
+    parser_classes = [JSONParser]
+
+    def get_queryset(self):
+        """Return only active products by default, but allow admin to see all."""
+        queryset = ProductMaster.objects.all().order_by("name")
+        # Filter by active status unless specifically requested
+        show_inactive = self.request.query_params.get('show_inactive', 'false').lower() == 'true'
+        if not show_inactive:
+            queryset = queryset.filter(is_active=True)
+        return queryset
+
+    @decorators.action(detail=False, methods=["post"])
+    def bulk_update_status(self, request):
+        """
+        Bulk activate/deactivate products (admin only).
+        """
+        # Verify admin password
+        password = request.data.get('password', '').strip()
+        admin_password = getattr(settings, 'ADMIN_PASSWORD', 'Admin@2025')
+        if password != admin_password:
+            return Response({'success': False, 'message': 'Invalid admin password'}, status=403)
+        
+        product_ids = request.data.get('product_ids', [])
+        is_active = request.data.get('is_active', True)
+        
+        if not product_ids:
+            return Response({'success': False, 'message': 'No product IDs provided'}, status=400)
+        
+        try:
+            updated_count = ProductMaster.objects.filter(id__in=product_ids).update(is_active=is_active)
+            status_text = "activated" if is_active else "deactivated"
+            return Response({
+                'success': True,
+                'message': f'{status_text.capitalize()} {updated_count} products',
+                'updated_count': updated_count
+            })
+        except Exception as e:
+            return Response({
+                'success': False,
+                'message': f'Error updating products: {str(e)}'
+            }, status=500)
 
 
 # ---------------- Invoices ---------------- #

@@ -32,6 +32,7 @@ export default function InvoiceApp() {
   const [crmRefreshTrigger, setCrmRefreshTrigger] = useState(0)
   
   const [sweets, setSweets] = useState<Sweet[]>([])
+  const [products, setProducts] = useState<any[]>([])
   const [customerName, setCustomerName] = useState('')
   const [billType, setBillType] = useState<'GST' | 'Non-GST'>('Non-GST')
   const [paymentMode, setPaymentMode] = useState<'cash' | 'credit'>('credit')
@@ -47,6 +48,16 @@ export default function InvoiceApp() {
       .then((res) => res.json())
       .then((data: Sweet[] | { results?: Sweet[] }) => {
         setSweets(Array.isArray(data) ? data : data.results ?? [])
+      })
+      .catch(console.error)
+  }, [])
+
+  // Load products from backend
+  useEffect(() => {
+    fetch(`${API_BASE}/products/`)
+      .then((res) => res.json())
+      .then((data: any[] | { results?: any[] }) => {
+        setProducts(Array.isArray(data) ? data : data.results ?? [])
       })
       .catch(console.error)
   }, [])
@@ -912,12 +923,22 @@ export default function InvoiceApp() {
                       <td style={{ padding: '12px 16px' }}>
                         <SweetDropdown
                           sweets={sweets}
+                          products={products}
                           value={it.sweetName ?? sweet?.name ?? ''}
-                          onChange={(name, selectedSweet) => {
+                          onChange={(name, selectedItem) => {
+                            // Handle both Sweet and ProductMaster items
+                            const itemType = selectedItem ? 
+                              ('sweet_type' in selectedItem ? selectedItem.sweet_type : selectedItem.product_type) : 
+                              it.mode
+                            const pricePerKg = selectedItem?.price_per_kg
+                            const pricePerUnit = selectedItem?.price_per_unit
+                            
                             updateItem(idx, {
                               sweetName: name,
-                              sweetId: selectedSweet?.id,
-                              mode: selectedSweet ? it.mode ?? selectedSweet.sweet_type : it.mode,
+                              sweetId: selectedItem?.id,
+                              mode: selectedItem ? it.mode ?? itemType : it.mode,
+                              // Auto-fill unit price if available
+                              unit_price_override: itemType === 'weight' ? pricePerKg : pricePerUnit,
                             })
                           }}
                           placeholder="Type sweet name"

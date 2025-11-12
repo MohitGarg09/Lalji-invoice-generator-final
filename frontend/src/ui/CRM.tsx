@@ -65,6 +65,18 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
   const [resetPassword, setResetPassword] = useState('')
   const [resetting, setResetting] = useState(false)
 
+  // Products Management state
+  const [showProductsModal, setShowProductsModal] = useState(false)
+  const [products, setProducts] = useState<any[]>([])
+  const [editingProduct, setEditingProduct] = useState<any>(null)
+  const [productForm, setProductForm] = useState({
+    name: '',
+    product_type: 'weight' as 'weight' | 'count',
+    price_per_kg: '',
+    price_per_unit: '',
+    is_active: true
+  })
+
   // Search and filter states
   const [searchTerm, setSearchTerm] = useState('')
   const [filterCustomer, setFilterCustomer] = useState('')
@@ -196,6 +208,90 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
     } finally {
       setResetting(false)
     }
+  }
+
+  // Load products from backend
+  const loadProducts = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/products/?show_inactive=true`)
+      const data = await response.json()
+      setProducts(Array.isArray(data) ? data : data.results || [])
+    } catch (error) {
+      console.error('Error loading products:', error)
+    }
+  }
+
+  // Save product (create or update)
+  const saveProduct = async () => {
+    try {
+      const url = editingProduct 
+        ? `${API_BASE}/products/${editingProduct.id}/`
+        : `${API_BASE}/products/`
+      const method = editingProduct ? 'PUT' : 'POST'
+      
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(productForm)
+      })
+      
+      if (response.ok) {
+        alert(editingProduct ? 'Product updated successfully!' : 'Product created successfully!')
+        loadProducts()
+        resetProductForm()
+      } else {
+        const error = await response.json()
+        alert(`Error: ${error.message || 'Failed to save product'}`)
+      }
+    } catch (error) {
+      console.error('Error saving product:', error)
+      alert('Error saving product')
+    }
+  }
+
+  // Delete product
+  const deleteProduct = async (productId: number) => {
+    if (!confirm('Are you sure you want to delete this product?')) return
+    
+    try {
+      const response = await fetch(`${API_BASE}/products/${productId}/`, {
+        method: 'DELETE'
+      })
+      
+      if (response.ok) {
+        alert('Product deleted successfully!')
+        loadProducts()
+      } else {
+        alert('Error deleting product')
+      }
+    } catch (error) {
+      console.error('Error deleting product:', error)
+      alert('Error deleting product')
+    }
+  }
+
+  // Reset product form
+  const resetProductForm = () => {
+    setProductForm({
+      name: '',
+      product_type: 'weight',
+      price_per_kg: '',
+      price_per_unit: '',
+      is_active: true
+    })
+    setEditingProduct(null)
+  }
+
+  // Edit product
+  const editProduct = (product: any) => {
+    setEditingProduct(product)
+    setProductForm({
+      name: product.name,
+      product_type: product.product_type,
+      price_per_kg: product.price_per_kg || '',
+      price_per_unit: product.price_per_unit || '',
+      is_active: product.is_active
+    })
   }
 
   // Download PDF
@@ -411,6 +507,25 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
             )}
             {isAdmin && (
               <>
+                <button
+                  onClick={() => {
+                    setShowProductsModal(true)
+                    loadProducts()
+                  }}
+                  style={{
+                    padding: '12px 24px',
+                    fontSize: '15px',
+                    background: 'rgba(255,255,255,0.2)',
+                    color: 'white',
+                    border: '2px solid white',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontWeight: 600,
+                    marginRight: '12px',
+                  }}
+                >
+                  Manage Products
+                </button>
                 <button
                   onClick={() => setShowSettings(true)}
                   style={{
@@ -1310,6 +1425,292 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
                   )
                 })()
               )}
+            </div>
+          </div>
+        )}
+
+        {/* Products Management Modal */}
+        {showProductsModal && (
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1000,
+            }}
+          >
+            <div
+              style={{
+                backgroundColor: 'white',
+                borderRadius: '12px',
+                padding: '32px',
+                maxWidth: '800px',
+                width: '90%',
+                maxHeight: '80vh',
+                overflowY: 'auto',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              }}
+            >
+              <h2 style={{ margin: '0 0 24px 0', fontSize: '24px', fontWeight: 700, color: '#111827' }}>
+                Manage Products
+              </h2>
+              
+              {/* Product Form */}
+              <div style={{ marginBottom: '32px', padding: '24px', backgroundColor: '#f9fafb', borderRadius: '8px' }}>
+                <h3 style={{ margin: '0 0 16px 0', fontSize: '18px', fontWeight: 600, color: '#374151' }}>
+                  {editingProduct ? 'Edit Product' : 'Add New Product'}
+                </h3>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#374151', marginBottom: '6px' }}>
+                      Product Name
+                    </label>
+                    <input
+                      type="text"
+                      value={productForm.name}
+                      onChange={(e) => setProductForm({...productForm, name: e.target.value})}
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        fontSize: '14px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '6px',
+                        outline: 'none',
+                      }}
+                      placeholder="Enter product name"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#374151', marginBottom: '6px' }}>
+                      Type
+                    </label>
+                    <select
+                      value={productForm.product_type}
+                      onChange={(e) => setProductForm({...productForm, product_type: e.target.value as 'weight' | 'count'})}
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        fontSize: '14px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '6px',
+                        outline: 'none',
+                      }}
+                    >
+                      <option value="weight">By Weight</option>
+                      <option value="count">By Count</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#374151', marginBottom: '6px' }}>
+                      Price per KG
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={productForm.price_per_kg}
+                      onChange={(e) => setProductForm({...productForm, price_per_kg: e.target.value})}
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        fontSize: '14px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '6px',
+                        outline: 'none',
+                      }}
+                      placeholder="0.00"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#374151', marginBottom: '6px' }}>
+                      Price per Unit
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={productForm.price_per_unit}
+                      onChange={(e) => setProductForm({...productForm, price_per_unit: e.target.value})}
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        fontSize: '14px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '6px',
+                        outline: 'none',
+                      }}
+                      placeholder="0.00"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#374151', marginBottom: '6px' }}>
+                      Status
+                    </label>
+                    <select
+                      value={productForm.is_active ? 'active' : 'inactive'}
+                      onChange={(e) => setProductForm({...productForm, is_active: e.target.value === 'active'})}
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        fontSize: '14px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '6px',
+                        outline: 'none',
+                      }}
+                    >
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <button
+                    onClick={saveProduct}
+                    style={{
+                      padding: '10px 20px',
+                      fontSize: '14px',
+                      background: '#3b82f6',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      fontWeight: 600,
+                    }}
+                  >
+                    {editingProduct ? 'Update Product' : 'Add Product'}
+                  </button>
+                  
+                  {editingProduct && (
+                    <button
+                      onClick={resetProductForm}
+                      style={{
+                        padding: '10px 20px',
+                        fontSize: '14px',
+                        background: '#6b7280',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontWeight: 600,
+                      }}
+                    >
+                      Cancel Edit
+                    </button>
+                  )}
+                </div>
+              </div>
+              
+              {/* Products List */}
+              <div style={{ marginBottom: '24px' }}>
+                <h3 style={{ margin: '0 0 16px 0', fontSize: '18px', fontWeight: 600, color: '#374151' }}>
+                  Products List
+                </h3>
+                
+                {products.length === 0 ? (
+                  <p style={{ color: '#6b7280', fontStyle: 'italic' }}>No products found. Add your first product above.</p>
+                ) : (
+                  <div style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+                      <thead>
+                        <tr style={{ backgroundColor: '#f3f4f6' }}>
+                          <th style={{ padding: '12px', textAlign: 'left', fontWeight: 600 }}>Name</th>
+                          <th style={{ padding: '12px', textAlign: 'left', fontWeight: 600 }}>Type</th>
+                          <th style={{ padding: '12px', textAlign: 'right', fontWeight: 600 }}>Price/KG</th>
+                          <th style={{ padding: '12px', textAlign: 'right', fontWeight: 600 }}>Price/Unit</th>
+                          <th style={{ padding: '12px', textAlign: 'center', fontWeight: 600 }}>Status</th>
+                          <th style={{ padding: '12px', textAlign: 'center', fontWeight: 600 }}>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {products.map((product) => (
+                          <tr key={product.id} style={{ borderBottom: '1px solid #f3f4f6' }}>
+                            <td style={{ padding: '12px', fontWeight: 500 }}>{product.name}</td>
+                            <td style={{ padding: '12px' }}>{product.product_type === 'weight' ? 'By Weight' : 'By Count'}</td>
+                            <td style={{ padding: '12px', textAlign: 'right' }}>₹{product.price_per_kg || '-'}</td>
+                            <td style={{ padding: '12px', textAlign: 'right' }}>₹{product.price_per_unit || '-'}</td>
+                            <td style={{ padding: '12px', textAlign: 'center' }}>
+                              <span style={{ 
+                                padding: '4px 8px', 
+                                borderRadius: '4px', 
+                                fontSize: '12px', 
+                                fontWeight: 600,
+                                backgroundColor: product.is_active ? '#dcfce7' : '#fee2e2',
+                                color: product.is_active ? '#166534' : '#dc2626'
+                              }}>
+                                {product.is_active ? 'Active' : 'Inactive'}
+                              </span>
+                            </td>
+                            <td style={{ padding: '12px', textAlign: 'center' }}>
+                              <button
+                                onClick={() => editProduct(product)}
+                                style={{
+                                  padding: '6px 12px',
+                                  fontSize: '12px',
+                                  background: '#3b82f6',
+                                  color: 'white',
+                                  border: 'none',
+                                  borderRadius: '4px',
+                                  cursor: 'pointer',
+                                  marginRight: '8px',
+                                }}
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => deleteProduct(product.id)}
+                                style={{
+                                  padding: '6px 12px',
+                                  fontSize: '12px',
+                                  background: '#ef4444',
+                                  color: 'white',
+                                  border: 'none',
+                                  borderRadius: '4px',
+                                  cursor: 'pointer',
+                                }}
+                              >
+                                Delete
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+              
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <button
+                  onClick={() => {
+                    setShowProductsModal(false)
+                    resetProductForm()
+                  }}
+                  style={{
+                    padding: '12px 24px',
+                    fontSize: '14px',
+                    background: '#6b7280',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontWeight: 600,
+                  }}
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         )}

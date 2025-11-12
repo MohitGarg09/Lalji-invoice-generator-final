@@ -1,11 +1,17 @@
 from rest_framework import serializers
-from .models import Sweet, Invoice, InvoiceItem
+from .models import Sweet, Invoice, InvoiceItem, ProductMaster
 
 
 class SweetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Sweet
         fields = ['id', 'name', 'sweet_type', 'price_per_kg', 'price_per_unit', 'usage_count', 'last_used', 'created_at']
+
+
+class ProductMasterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductMaster
+        fields = ['id', 'name', 'product_type', 'price_per_kg', 'price_per_unit', 'is_active', 'created_at', 'updated_at']
 
 
 class InvoiceItemSerializer(serializers.ModelSerializer):
