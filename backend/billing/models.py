@@ -78,7 +78,10 @@ class InvoiceItem(models.Model):
     ]
 
     invoice = models.ForeignKey(Invoice, related_name='items', on_delete=models.CASCADE)
-    sweet = models.ForeignKey(Sweet, on_delete=models.PROTECT)
+    sweet = models.ForeignKey(Sweet, on_delete=models.SET_NULL, null=True)
+    
+    # Store sweet name to preserve it even if sweet record is deleted
+    sweet_name = models.CharField(max_length=100, blank=True)
 
     # Item-specific type (can differ from sweet's default type)
     item_type = models.CharField(max_length=10, choices=TYPE_CHOICES, default='weight')
