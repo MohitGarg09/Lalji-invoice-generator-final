@@ -937,14 +937,14 @@ export default function InvoiceApp() {
             }}>
               <thead>
                 <tr style={{ background: 'linear-gradient(to right, #f9fafb, #f3f4f6)' }}>
-                  <th style={{ textAlign: 'left', padding: '16px', width: '28%' }}>SWEET</th>
-                  <th style={{ textAlign: 'left', padding: '16px', width: '7%' }}>MODE</th>
-                  <th style={{ textAlign: 'left', padding: '16px', width: '5%' }}>GROSS (KG)</th>
-                  <th style={{ textAlign: 'left', padding: '16px', width: '5%' }}>TRAY (KG)</th>
-                  <th style={{ textAlign: 'left', padding: '16px', width: '5%' }}>NET (KG)</th>
-                  <th style={{ textAlign: 'left', padding: '16px', width: '12%' }}>COUNT</th>
-                  <th style={{ textAlign: 'right', padding: '16px', width: '10%' }}>UNIT PRICE</th>
-                  <th style={{ textAlign: 'right', padding: '16px', width: '10%' }}>AMOUNT (₹)</th>
+                  <th style={{ textAlign: 'left', padding: '16px', width: '17%' }}>SWEET</th>
+                  <th style={{ textAlign: 'left', padding: '16px', width: '9%' }}>MODE</th>
+                  <th style={{ textAlign: 'left', padding: '16px', width: '8%' }}>GROSS (KG)</th>
+                  <th style={{ textAlign: 'left', padding: '16px', width: '8%' }}>TRAY (KG)</th>
+                  <th style={{ textAlign: 'left', padding: '16px', width: '7%' }}>NET (KG)</th>
+                  <th style={{ textAlign: 'left', padding: '16px', width: '15%' }}>COUNT</th>
+                  <th style={{ textAlign: 'right', padding: '16px', width: '14%' }}>UNIT PRICE</th>
+                  <th style={{ textAlign: 'right', padding: '16px', width: '12%' }}>AMOUNT (₹)</th>
                   <th style={{ padding: '16px', width: '30px' }}></th>
                 </tr>
               </thead>
@@ -962,8 +962,8 @@ export default function InvoiceApp() {
                     <tr key={idx} style={{ borderBottom: '1px solid #f3f4f6' }}>
                       <td style={{ 
                         padding: '12px 16px', 
-                        minWidth: '140px',
-                        width: '28%'
+                        minWidth: '100px',
+                        width: '17%'
                       }}>
                         <SweetDropdown
                           sweets={sweets}
