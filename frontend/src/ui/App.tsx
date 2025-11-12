@@ -118,6 +118,19 @@ export default function InvoiceApp() {
     fontFamily: 'inherit',
   } as React.CSSProperties
 
+  // Helper function to check if an item is complete
+  const isItemComplete = (item: InvoiceItemDraft): boolean => {
+    if (!item.sweetName?.trim()) return false
+    
+    const mode = item.mode || 'weight'
+    if (mode === 'weight') {
+      return !!(item.gross_weight_kg?.trim() && item.tray_weight_kg?.trim())
+    } else {
+      return !!(item.count?.trim())
+    }
+  }
+
+
   // Create Invoice
   // async function createInvoice() {
   //   setCreating(true)
@@ -698,9 +711,23 @@ export default function InvoiceApp() {
               Customer Name
             </label>
             <input
+              ref={(el) => {
+                // Only focus on initial mount, not on every render
+                if (el && !customerName && items.length === 1 && !items[0].sweetName) {
+                  el.focus()
+                }
+              }}
               placeholder="Enter customer name"
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  // Focus on payment mode toggle
+                  const paymentToggle = document.querySelector('input[name="paymentMode"]') as HTMLElement
+                  paymentToggle?.focus()
+                }
+              }}
               style={{
                 ...inputStyle,
                 padding: '12px 16px',
@@ -761,6 +788,14 @@ export default function InvoiceApp() {
     value="cash"
     checked={paymentMode === 'cash'}
     onChange={() => setPaymentMode('cash')}
+    onKeyDown={(e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault()
+        // Focus on GST toggle
+        const gstToggle = document.querySelector('input[name="billType"]') as HTMLElement
+        gstToggle?.focus()
+      }
+    }}
     style={{
       accentColor: '#10b981',
       transform: 'scale(1.15)',
@@ -839,6 +874,14 @@ export default function InvoiceApp() {
           name="billType"
           checked={billType === 'GST'}
           onChange={() => setBillType('GST')}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault()
+              // Focus on first sweet input
+              const firstSweetInput = document.querySelector('input[placeholder="Type sweet name"]') as HTMLElement
+              firstSweetInput?.focus()
+            }
+          }}
           style={{
             accentColor: '#3b82f6',
             transform: 'scale(1.15)',
@@ -1033,9 +1076,19 @@ export default function InvoiceApp() {
                           step="0.001"
                           placeholder="0.000"
                           value={it.gross_weight_kg ?? ''}
-                          onChange={(e) =>
+                          onChange={(e) => {
                             updateItem(idx, { gross_weight_kg: e.target.value })
-                          }
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault()
+                              if (mode === 'weight') {
+                                // Focus on tray weight
+                                const trayInput = e.currentTarget.closest('tr')?.querySelector('input[placeholder="0.000"]:nth-of-type(2)') as HTMLElement
+                                trayInput?.focus()
+                              }
+                            }
+                          }}
                           disabled={mode !== 'weight'}
                           style={{
                             ...inputStyle,
@@ -1050,9 +1103,19 @@ export default function InvoiceApp() {
                           step="0.001"
                           placeholder="0.000"
                           value={it.tray_weight_kg ?? ''}
-                          onChange={(e) =>
+                          onChange={(e) => {
                             updateItem(idx, { tray_weight_kg: e.target.value })
-                          }
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault()
+                              // Check if item is complete and auto-add if it's the last row
+                              const updatedItem = { ...it, tray_weight_kg: (e.target as HTMLInputElement).value }
+                              if (isItemComplete(updatedItem) && idx === items.length - 1) {
+                                setTimeout(() => addRow(), 100)
+                              }
+                            }
+                          }}
                           disabled={mode !== 'weight'}
                           style={{
                             ...inputStyle,
@@ -1075,7 +1138,19 @@ export default function InvoiceApp() {
                         <input
                           type="number"
                           value={it.count ?? ''}
-                          onChange={(e) => updateItem(idx, { count: e.target.value })}
+                          onChange={(e) => {
+                            updateItem(idx, { count: e.target.value })
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault()
+                              // Check if item is complete and auto-add if it's the last row
+                              const updatedItem = { ...it, count: (e.target as HTMLInputElement).value }
+                              if (isItemComplete(updatedItem) && idx === items.length - 1) {
+                                setTimeout(() => addRow(), 100)
+                              }
+                            }
+                          }}
                           disabled={mode !== 'count'}
                           style={{
                             ...inputStyle,
