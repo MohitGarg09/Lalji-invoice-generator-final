@@ -417,10 +417,44 @@ export default function InvoiceApp() {
         const updatedItems = [...items]
         const workingSweets: Sweet[] = [...sweets]
 
-        // Ensure all typed sweets exist
+        // Ensure all items have corresponding Sweet records
         for (let i = 0; i < updatedItems.length; i++) {
           const it = updatedItems[i]
-          if (!it.sweetId && it.sweetName?.trim()) {
+          
+          // If item has sweetId, check if it's a product that needs to be converted to sweet
+          if (it.sweetId) {
+            const sweet = workingSweets.find((s) => s.id === it.sweetId)
+            const product = products.find((p) => p.id === it.sweetId)
+            
+            // If it's a product (not found in sweets), create a corresponding sweet
+            if (!sweet && product) {
+              const res = await fetch(`${API_BASE}/sweets/`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  name: product.name,
+                  sweet_type: product.product_type,
+                  price_per_kg: product.price_per_kg,
+                  price_per_unit: product.price_per_unit,
+                }),
+              })
+
+              if (!res.ok) {
+                throw new Error(`Failed to create sweet from product: ${await res.text()}`)
+              }
+
+              const newSweet = await res.json()
+              if (newSweet) {
+                workingSweets.push(newSweet)
+                setSweets((prev) => [...prev, newSweet])
+                // Update the item to use the new sweet ID
+                it.sweetId = newSweet.id
+                it.mode = it.mode || newSweet.sweet_type
+              }
+            }
+          }
+          // Handle manually typed sweet names
+          else if (!it.sweetId && it.sweetName?.trim()) {
             let existing = workingSweets.find(
               (s) => s.name.toLowerCase() === it.sweetName!.toLowerCase()
             )
@@ -456,21 +490,16 @@ export default function InvoiceApp() {
 
         // Calculate amounts
         updatedItems.forEach((it) => {
-          // Find the item in either sweets or products
           const sweet = workingSweets.find((s) => s.id === it.sweetId)
-          const product = products.find((p) => p.id === it.sweetId)
-          const item = sweet || product
-          
-          if (!item) return
+          if (!sweet) return
 
-          // Get the correct type and prices based on whether it's a sweet or product
-          const mode = it.mode || (sweet ? sweet.sweet_type : product?.product_type)
+          const mode = it.mode || sweet.sweet_type
           const unitPrice =
             it.unit_price_override && it.unit_price_override.trim() !== ""
               ? parseFloat(it.unit_price_override)
               : mode === "weight"
-              ? parseFloat(item.price_per_kg || "0")
-              : parseFloat(item.price_per_unit || "0")
+              ? parseFloat(sweet.price_per_kg || "0")
+              : parseFloat(sweet.price_per_unit || "0")
 
           if (mode === "weight") {
             const gross = parseFloat((it.gross_weight_kg || "0").trim()) || 0
@@ -493,19 +522,16 @@ export default function InvoiceApp() {
           items: updatedItems
             .filter((it) => it.sweetId)
             .map((it) => {
-              // Find the item in either sweets or products
               const sweet = workingSweets.find((s) => s.id === it.sweetId)
-              const product = products.find((p) => p.id === it.sweetId)
-              const item = sweet || product
               
-              if (!item) {
-                throw new Error(`Item with ID ${it.sweetId} not found in sweets or products`)
+              if (!sweet) {
+                throw new Error(`Sweet with ID ${it.sweetId} not found`)
               }
               
-              const mode = it.mode || (sweet ? sweet.sweet_type : product?.product_type)
+              const mode = it.mode || sweet.sweet_type
               if (mode === "weight") {
                 return {
-                  sweet: item.id,
+                  sweet: sweet.id,
                   gross_weight_kg: parseFloat(it.gross_weight_kg || "0"),
                   tray_weight_kg: parseFloat(it.tray_weight_kg || "0"),
                   unit_price_override: it.unit_price_override
@@ -514,7 +540,7 @@ export default function InvoiceApp() {
                 }
               }
               return {
-                sweet: item.id,
+                sweet: sweet.id,
                 count: parseFloat(it.count || "0"),
                 unit_price_override: it.unit_price_override
                   ? parseFloat(it.unit_price_override)
