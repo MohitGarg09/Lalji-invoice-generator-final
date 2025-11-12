@@ -48,8 +48,9 @@ class SweetViewSet(viewsets.ModelViewSet):
     @decorators.action(detail=False, methods=["post"])
     def reset_usage_stats(self, request):
         """
-        Reset usage statistics for all sweets (admin only).
-        This will clear usage_count and last_used fields.
+        Delete all sweet records from the database (admin only).
+        This clears all sweet names from the dropdown so you can start fresh.
+        Existing invoices will keep their sweet name references.
         """
         # Verify admin password
         password = request.data.get('password', '').strip()
@@ -57,13 +58,26 @@ class SweetViewSet(viewsets.ModelViewSet):
         if password != admin_password:
             return Response({'success': False, 'message': 'Invalid admin password'}, status=403)
         
-        # Reset usage stats
-        updated_count = Sweet.objects.update(usage_count=0, last_used=None)
-        return Response({
-            'success': True, 
-            'message': f'Reset usage statistics for {updated_count} sweets',
-            'updated_count': updated_count
-        })
+        # Get count before deletion
+        sweet_count = Sweet.objects.count()
+        
+        try:
+            # Delete all sweet records (this will clear the dropdown)
+            deleted_count, deleted_details = Sweet.objects.all().delete()
+            print(f"Deleted {deleted_count} sweet records: {deleted_details}")  # Debug log
+            
+            return Response({
+                'success': True, 
+                'message': f'Cleared {sweet_count} sweet names from dropdown. You can now start fresh with new names.',
+                'deleted_count': sweet_count,
+                'actual_deleted': deleted_count
+            })
+        except Exception as e:
+            # If deletion fails due to foreign key constraints, provide helpful message
+            return Response({
+                'success': False, 
+                'message': f'Cannot clear sweet names because they are referenced in existing invoices. Error: {str(e)}'
+            }, status=400)
 
     @decorators.action(detail=False, methods=["get"])
     def popular(self, request):

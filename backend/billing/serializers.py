@@ -103,10 +103,25 @@ class InvoiceSerializer(serializers.ModelSerializer):
         
         for item in items_data:
             item = self._ensure_item_type(item)
-            InvoiceItem.objects.create(invoice=invoice, **item)
+            
+            # Get sweet name to preserve it
+            sweet = item.get('sweet')
+            sweet_name = ''
+            if sweet:
+                if hasattr(sweet, 'name'):
+                    sweet_name = sweet.name
+                else:
+                    # If sweet is an ID, get the name from database
+                    try:
+                        sweet_obj = Sweet.objects.get(id=sweet)
+                        sweet_name = sweet_obj.name
+                    except Sweet.DoesNotExist:
+                        sweet_name = 'Unknown Sweet'
+            
+            # Create invoice item with sweet name preserved
+            InvoiceItem.objects.create(invoice=invoice, sweet_name=sweet_name, **item)
             
             # Track which sweets were used
-            sweet = item.get('sweet')
             if sweet:
                 # Handle both Sweet object and Sweet ID
                 sweet_id = sweet.id if hasattr(sweet, 'id') else sweet

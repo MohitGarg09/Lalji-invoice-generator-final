@@ -154,32 +154,45 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
       return
     }
 
+    // Confirmation for reset action
+    const confirmed = window.confirm(
+      'This will clear all sweet names from the dropdown.\n\n' +
+      'After reset:\n' +
+      '• Dropdown will be empty\n' +
+      '• Your existing invoices will keep their sweet names\n' +
+      '• You can start fresh by adding new sweet names\n\n' +
+      'Continue with clearing dropdown?'
+    )
+    if (!confirmed) return
+
     setResetting(true)
     try {
       const response = await fetch(`${API_BASE}/sweets/reset_usage_stats/`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: resetPassword }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ password: resetPassword })
       })
+      
       const data = await response.json()
       
       if (data.success) {
-        alert(`Successfully reset usage statistics for ${data.updated_count} sweets`)
+        alert(`Success! ${data.message}`)
         setResetPassword('')
         setShowSettings(false)
-        // Refresh sweets data
-        fetch(`${API_BASE}/sweets/`)
-          .then((r) => r.json())
-          .then((data: Sweet[] | { results?: Sweet[] }) => {
-            setSweets(Array.isArray(data) ? data : data.results ?? [])
-          })
-          .catch(() => {})
+        // Clear sweets data since all sweet records are deleted
+        setSweets([])
+        // Signal to other components that sweets were cleared
+        localStorage.setItem('sweetsCleared', Date.now().toString())
+        // Also trigger a page reload to ensure all components refresh
+        window.location.reload()
       } else {
-        alert(data.message || 'Failed to reset usage statistics')
+        alert(data.message || 'Failed to clear sweet names')
       }
     } catch (error) {
-      console.error('Error resetting dropdown data:', error)
-      alert('Failed to reset dropdown data')
+      console.error('Error resetting usage statistics:', error)
+      alert('Error resetting usage statistics')
     } finally {
       setResetting(false)
     }
@@ -1336,7 +1349,7 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
                   Dropdown Management
                 </h3>
                 <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#6b7280' }}>
-                  Reset usage statistics for all sweet names in the dropdown. This will clear the frequency-based ordering and start fresh.
+                  Clear all sweet names from the dropdown to start fresh. Your existing invoices will keep their sweet names, but the dropdown will become empty so you can add new names.
                 </p>
                 
                 <div style={{ marginBottom: '16px' }}>
@@ -1365,7 +1378,7 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
                   style={{
                     padding: '10px 20px',
                     fontSize: '14px',
-                    background: resetting ? '#9ca3af' : '#ef4444',
+                    background: resetting ? '#9ca3af' : '#3b82f6',
                     color: 'white',
                     border: 'none',
                     borderRadius: '6px',
@@ -1373,7 +1386,7 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
                     fontWeight: 600,
                   }}
                 >
-                  {resetting ? 'Resetting...' : 'Reset Dropdown Data'}
+                  {resetting ? 'Clearing...' : 'Clear Dropdown Names'}
                 </button>
               </div>
 
