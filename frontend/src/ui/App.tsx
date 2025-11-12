@@ -1040,17 +1040,20 @@ export default function InvoiceApp() {
                             // Auto-focus to appropriate input after selection
                             if (selectedItem) {
                               setTimeout(() => {
-                                const currentRow = document.querySelector(`tr:nth-child(${idx + 1})`)
+                                // Find the current row in the tbody (skip thead)
+                                const tableRows = document.querySelectorAll('tbody tr')
+                                const currentRow = tableRows[idx]
+                                
                                 if (itemType === 'weight') {
-                                  // Focus on gross weight input
-                                  const grossInput = currentRow?.querySelector('input[placeholder="0.000"]') as HTMLElement
+                                  // Focus on gross weight input (first input with placeholder "0.000")
+                                  const grossInput = currentRow?.querySelector('input[step="0.001"][placeholder="0.000"]') as HTMLElement
                                   grossInput?.focus()
                                 } else {
-                                  // Focus on count input
-                                  const countInput = currentRow?.querySelector('input[type="number"]:not([placeholder="0.000"])') as HTMLElement
+                                  // Focus on count input (input with type="number" but no step attribute)
+                                  const countInput = currentRow?.querySelector('input[type="number"]:not([step])') as HTMLElement
                                   countInput?.focus()
                                 }
-                              }, 100)
+                              }, 150)
                             }
                           }}
                           placeholder="Type sweet name"
@@ -1108,8 +1111,9 @@ export default function InvoiceApp() {
                             if (e.key === 'Enter') {
                               e.preventDefault()
                               if (mode === 'weight') {
-                                // Focus on tray weight
-                                const trayInput = e.currentTarget.closest('tr')?.querySelector('input[placeholder="0.000"]:nth-of-type(2)') as HTMLElement
+                                // Focus on tray weight input (second input with step="0.001")
+                                const currentRow = e.currentTarget.closest('tr')
+                                const trayInput = currentRow?.querySelectorAll('input[step="0.001"]')[1] as HTMLElement
                                 trayInput?.focus()
                               }
                             }
