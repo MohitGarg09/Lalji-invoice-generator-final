@@ -46,11 +46,6 @@ export default function SweetDropdown({ sweets, products = [], value, onChange, 
     return 'sweet_type' in item
   }
 
-  // Helper function to get item type
-  const getItemType = (item: DropdownItem): 'weight' | 'count' => {
-    return isSweet(item) ? item.sweet_type : item.product_type
-  }
-
   // Combine and sort all items (products first, then sweets by popularity)
   const sortedItems = [
     // Products first (from master list)
