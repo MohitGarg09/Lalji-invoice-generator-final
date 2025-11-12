@@ -946,13 +946,13 @@ export default function InvoiceApp() {
             }}>
               <thead>
                 <tr style={{ background: 'linear-gradient(to right, #f9fafb, #f3f4f6)' }}>
-                  <th style={{ textAlign: 'left', padding: '16px', width: '40%' }}>SWEET</th>
-                  <th style={{ textAlign: 'left', padding: '16px', width: '6%' }}>MODE</th>
-                  <th style={{ textAlign: 'left', padding: '16px', width: '8%' }}>GROSS (KG)</th>
-                  <th style={{ textAlign: 'left', padding: '16px', width: '8%' }}>TRAY (KG)</th>
+                  <th style={{ textAlign: 'left', padding: '16px', width: '30%' }}>SWEET</th>
+                  <th style={{ textAlign: 'left', padding: '16px', width: '8%' }}>MODE</th>
+                  <th style={{ textAlign: 'left', padding: '16px', width: '6%' }}>GROSS (KG)</th>
+                  <th style={{ textAlign: 'left', padding: '16px', width: '6%' }}>TRAY (KG)</th>
                   <th style={{ textAlign: 'left', padding: '16px', width: '6%' }}>NET (KG)</th>
-                  <th style={{ textAlign: 'left', padding: '16px', width: '6%' }}>COUNT</th>
-                  <th style={{ textAlign: 'right', padding: '16px', width: '10%' }}>UNIT PRICE</th>
+                  <th style={{ textAlign: 'left', padding: '16px', width: '8%' }}>COUNT</th>
+                  <th style={{ textAlign: 'right', padding: '16px', width: '5%' }}>UNIT PRICE</th>
                   <th style={{ textAlign: 'right', padding: '16px', width: '10%' }}>AMOUNT (₹)</th>
                   <th style={{ padding: '16px', width: '60px' }}></th>
                 </tr>
@@ -971,8 +971,8 @@ export default function InvoiceApp() {
                     <tr key={idx} style={{ borderBottom: '1px solid #f3f4f6' }}>
                       <td style={{ 
                         padding: '12px 16px', 
-                        minWidth: '200px',
-                        width: '40%'
+                        minWidth: '150px',
+                        width: '30%'
                       }}>
                         <SweetDropdown
                           sweets={sweets}
