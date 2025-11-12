@@ -72,12 +72,12 @@ export default function SweetDropdown({ sweets, products = [], value, onChange, 
   // Filter items based on input value
   useEffect(() => {
     if (!value.trim()) {
-      setFilteredItems(sortedItems.slice(0, 10)) // Show top 10 when empty
+      setFilteredItems(sortedItems) // Show all items when empty
     } else {
       const filtered = sortedItems.filter(item =>
         item.name.toLowerCase().includes(value.toLowerCase())
       )
-      setFilteredItems(filtered.slice(0, 20)) // Show top 20 matches
+      setFilteredItems(filtered) // Show all matching items
     }
     setHighlightedIndex(-1)
   }, [value, sweets, products])
