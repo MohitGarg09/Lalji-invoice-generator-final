@@ -9,7 +9,7 @@ from django.db.models import Q
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 
-from .models import Sweet, Invoice
+from .models import Sweet, Invoice, InvoiceItem
 from .serializers import SweetSerializer, InvoiceSerializer
 from .pdf import render_invoice_pdf
 # Excel imports removed - using database-only storage
@@ -44,6 +44,36 @@ class SweetViewSet(viewsets.ModelViewSet):
         uploaded = request.FILES["file"].read()
         count = import_sweets_from_excel(uploaded)
         return Response({"imported_or_updated": count})
+
+    @decorators.action(detail=False, methods=["post"])
+    def reset_usage_stats(self, request):
+        """
+        Reset usage statistics for all sweets (admin only).
+        This will clear usage_count and last_used fields.
+        """
+        # Verify admin password
+        password = request.data.get('password', '').strip()
+        admin_password = getattr(settings, 'ADMIN_PASSWORD', 'Admin@2025')
+        if password != admin_password:
+            return Response({'success': False, 'message': 'Invalid admin password'}, status=403)
+        
+        # Reset usage stats
+        updated_count = Sweet.objects.update(usage_count=0, last_used=None)
+        return Response({
+            'success': True, 
+            'message': f'Reset usage statistics for {updated_count} sweets',
+            'updated_count': updated_count
+        })
+
+    @decorators.action(detail=False, methods=["get"])
+    def popular(self, request):
+        """
+        Get sweets ordered by popularity (usage frequency and recency).
+        """
+        # Get sweets ordered by usage_count (desc), last_used (desc), then name
+        popular_sweets = Sweet.objects.all().order_by('-usage_count', '-last_used', 'name')
+        serializer = self.get_serializer(popular_sweets, many=True)
+        return Response(serializer.data)
 
 
 # ---------------- Invoices ---------------- #

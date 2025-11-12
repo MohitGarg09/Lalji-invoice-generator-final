@@ -37,6 +37,9 @@ type Sweet = {
   sweet_type: 'weight' | 'count'
   price_per_kg?: string
   price_per_unit?: string
+  usage_count?: number
+  last_used?: string
+  created_at?: string
 }
 
 type CRMProps = {
@@ -56,6 +59,11 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
   const [reportVisible, setReportVisible] = useState(false)
   const [reportLoading, setReportLoading] = useState(false)
   const [reportInvoices, setReportInvoices] = useState<Invoice[]>([])
+
+  // Settings state
+  const [showSettings, setShowSettings] = useState(false)
+  const [resetPassword, setResetPassword] = useState('')
+  const [resetting, setResetting] = useState(false)
 
   // Search and filter states
   const [searchTerm, setSearchTerm] = useState('')
@@ -137,6 +145,44 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
   const formatCurrency = (amount: string | number) => {
     const num = typeof amount === 'string' ? parseFloat(amount) : amount
     return `₹ ${num.toFixed(2)}`
+  }
+
+  // Reset dropdown usage statistics
+  const handleResetDropdownData = async () => {
+    if (!resetPassword.trim()) {
+      alert('Please enter admin password')
+      return
+    }
+
+    setResetting(true)
+    try {
+      const response = await fetch(`${API_BASE}/sweets/reset_usage_stats/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: resetPassword }),
+      })
+      const data = await response.json()
+      
+      if (data.success) {
+        alert(`Successfully reset usage statistics for ${data.updated_count} sweets`)
+        setResetPassword('')
+        setShowSettings(false)
+        // Refresh sweets data
+        fetch(`${API_BASE}/sweets/`)
+          .then((r) => r.json())
+          .then((data: Sweet[] | { results?: Sweet[] }) => {
+            setSweets(Array.isArray(data) ? data : data.results ?? [])
+          })
+          .catch(() => {})
+      } else {
+        alert(data.message || 'Failed to reset usage statistics')
+      }
+    } catch (error) {
+      console.error('Error resetting dropdown data:', error)
+      alert('Failed to reset dropdown data')
+    } finally {
+      setResetting(false)
+    }
   }
 
   // Download PDF
@@ -351,21 +397,38 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
               </button>
             )}
             {isAdmin && (
-              <button
-                onClick={() => setIsAdmin(false)}
-                style={{
-                  padding: '12px 24px',
-                  fontSize: '15px',
-                  background: 'rgba(239, 68, 68, 0.8)',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  fontWeight: 600,
-                }}
-              >
-                Logout Admin
-              </button>
+              <>
+                <button
+                  onClick={() => setShowSettings(true)}
+                  style={{
+                    padding: '12px 24px',
+                    fontSize: '15px',
+                    background: 'rgba(255,255,255,0.2)',
+                    color: 'white',
+                    border: '2px solid white',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontWeight: 600,
+                  }}
+                >
+                  Settings
+                </button>
+                <button
+                  onClick={() => setIsAdmin(false)}
+                  style={{
+                    padding: '12px 24px',
+                    fontSize: '15px',
+                    background: 'rgba(239, 68, 68, 0.8)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontWeight: 600,
+                  }}
+                >
+                  Logout Admin
+                </button>
+              </>
             )}
           </div>
         </div>
@@ -1234,6 +1297,106 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
                   )
                 })()
               )}
+            </div>
+          </div>
+        )}
+
+        {/* Settings Modal */}
+        {showSettings && (
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0,0,0,0.5)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1000,
+            }}
+          >
+            <div
+              style={{
+                background: 'white',
+                borderRadius: '12px',
+                padding: '32px',
+                width: '90%',
+                maxWidth: '500px',
+                boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+              }}
+            >
+              <h2 style={{ margin: '0 0 24px 0', fontSize: '24px', fontWeight: 700, color: '#111827' }}>
+                Settings
+              </h2>
+              
+              <div style={{ marginBottom: '24px' }}>
+                <h3 style={{ margin: '0 0 16px 0', fontSize: '18px', fontWeight: 600, color: '#374151' }}>
+                  Dropdown Management
+                </h3>
+                <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#6b7280' }}>
+                  Reset usage statistics for all sweet names in the dropdown. This will clear the frequency-based ordering and start fresh.
+                </p>
+                
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#374151', marginBottom: '6px' }}>
+                    Admin Password
+                  </label>
+                  <input
+                    type="password"
+                    value={resetPassword}
+                    onChange={(e) => setResetPassword(e.target.value)}
+                    placeholder="Enter admin password"
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      fontSize: '14px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '6px',
+                      outline: 'none',
+                    }}
+                  />
+                </div>
+                
+                <button
+                  onClick={handleResetDropdownData}
+                  disabled={resetting}
+                  style={{
+                    padding: '10px 20px',
+                    fontSize: '14px',
+                    background: resetting ? '#9ca3af' : '#ef4444',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: resetting ? 'not-allowed' : 'pointer',
+                    fontWeight: 600,
+                  }}
+                >
+                  {resetting ? 'Resetting...' : 'Reset Dropdown Data'}
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                <button
+                  onClick={() => {
+                    setShowSettings(false)
+                    setResetPassword('')
+                  }}
+                  style={{
+                    padding: '10px 20px',
+                    fontSize: '14px',
+                    background: '#f3f4f6',
+                    color: '#374151',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontWeight: 600,
+                  }}
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         )}

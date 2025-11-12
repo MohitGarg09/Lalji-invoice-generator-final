@@ -5,7 +5,7 @@ from .models import Sweet, Invoice, InvoiceItem
 class SweetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Sweet
-        fields = ['id', 'name', 'sweet_type', 'price_per_kg', 'price_per_unit']
+        fields = ['id', 'name', 'sweet_type', 'price_per_kg', 'price_per_unit', 'usage_count', 'last_used', 'created_at']
 
 
 class InvoiceItemSerializer(serializers.ModelSerializer):
@@ -94,14 +94,36 @@ class InvoiceSerializer(serializers.ModelSerializer):
         return item_dict
 
     def create(self, validated_data):
+        from django.utils import timezone
         items_data = validated_data.pop('items', [])
         invoice = Invoice.objects.create(**validated_data)
+        
+        # Track sweet usage
+        sweet_ids_used = set()
+        
         for item in items_data:
             item = self._ensure_item_type(item)
             InvoiceItem.objects.create(invoice=invoice, **item)
+            
+            # Track which sweets were used
+            sweet = item.get('sweet')
+            if sweet:
+                # Handle both Sweet object and Sweet ID
+                sweet_id = sweet.id if hasattr(sweet, 'id') else sweet
+                sweet_ids_used.add(sweet_id)
+        
+        # Update usage statistics for used sweets
+        if sweet_ids_used:
+            from django.db.models import F
+            Sweet.objects.filter(id__in=sweet_ids_used).update(
+                usage_count=F('usage_count') + 1,
+                last_used=timezone.now()
+            )
+        
         return invoice
 
     def update(self, instance, validated_data):
+        from django.utils import timezone
         items_data = validated_data.pop('items', None)
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
@@ -109,7 +131,26 @@ class InvoiceSerializer(serializers.ModelSerializer):
         if items_data is not None:
             # Keep existing behavior: delete and recreate invoice items
             instance.items.all().delete()
+            
+            # Track sweet usage for updated items
+            sweet_ids_used = set()
+            
             for item in items_data:
                 item = self._ensure_item_type(item)
                 InvoiceItem.objects.create(invoice=instance, **item)
+                
+                # Track which sweets were used
+                sweet = item.get('sweet')
+                if sweet:
+                    # Handle both Sweet object and Sweet ID
+                    sweet_id = sweet.id if hasattr(sweet, 'id') else sweet
+                    sweet_ids_used.add(sweet_id)
+            
+            # Update usage statistics for used sweets
+            if sweet_ids_used:
+                from django.db.models import F
+                Sweet.objects.filter(id__in=sweet_ids_used).update(
+                    usage_count=F('usage_count') + 1,
+                    last_used=timezone.now()
+                )
         return instance
