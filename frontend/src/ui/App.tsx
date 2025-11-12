@@ -1141,7 +1141,16 @@ export default function InvoiceApp() {
                               // Check if item is complete and auto-add if it's the last row
                               const updatedItem = { ...it, tray_weight_kg: (e.target as HTMLInputElement).value }
                               if (isItemComplete(updatedItem) && idx === items.length - 1) {
-                                setTimeout(() => addRow(), 100)
+                                setTimeout(() => {
+                                  addRow()
+                                  // Focus on the sweet input of the new row
+                                  setTimeout(() => {
+                                    const tableRows = document.querySelectorAll('tbody tr')
+                                    const newRow = tableRows[idx + 1]
+                                    const sweetInput = newRow?.querySelector('input[placeholder="Type sweet name"]') as HTMLElement
+                                    sweetInput?.focus()
+                                  }, 100)
+                                }, 100)
                               }
                             }
                           }}
@@ -1176,7 +1185,16 @@ export default function InvoiceApp() {
                               // Check if item is complete and auto-add if it's the last row
                               const updatedItem = { ...it, count: (e.target as HTMLInputElement).value }
                               if (isItemComplete(updatedItem) && idx === items.length - 1) {
-                                setTimeout(() => addRow(), 100)
+                                setTimeout(() => {
+                                  addRow()
+                                  // Focus on the sweet input of the new row
+                                  setTimeout(() => {
+                                    const tableRows = document.querySelectorAll('tbody tr')
+                                    const newRow = tableRows[idx + 1]
+                                    const sweetInput = newRow?.querySelector('input[placeholder="Type sweet name"]') as HTMLElement
+                                    sweetInput?.focus()
+                                  }, 100)
+                                }, 100)
                               }
                             }
                           }}
