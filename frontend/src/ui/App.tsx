@@ -1000,7 +1000,7 @@ export default function InvoiceApp() {
                       </td>
 
                       <td style={{ padding: '12px 16px' }}>
-                        <div style={{ display: 'flex', gap: '12px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                           <label
                             style={{
                               display: 'flex',
@@ -1105,7 +1105,7 @@ export default function InvoiceApp() {
                           <input
                             style={{
                               ...inputStyle,
-                              width: '100px',
+                              width: '70px',
                               textAlign: 'right',
                             }}
                             type="number"
