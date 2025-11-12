@@ -942,14 +942,14 @@ export default function InvoiceApp() {
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ background: 'linear-gradient(to right, #f9fafb, #f3f4f6)' }}>
-                  <th style={{ textAlign: 'left', padding: '16px', width: '25%' }}>SWEET</th>
-                  <th style={{ textAlign: 'left', padding: '16px', width: '8%' }}>MODE</th>
-                  <th style={{ textAlign: 'left', padding: '16px', width: '10%' }}>GROSS (KG)</th>
-                  <th style={{ textAlign: 'left', padding: '16px', width: '10%' }}>TRAY (KG)</th>
-                  <th style={{ textAlign: 'left', padding: '16px', width: '8%' }}>NET (KG)</th>
-                  <th style={{ textAlign: 'left', padding: '16px', width: '8%' }}>COUNT</th>
-                  <th style={{ textAlign: 'right', padding: '16px', width: '12%' }}>UNIT PRICE</th>
-                  <th style={{ textAlign: 'right', padding: '16px', width: '12%' }}>AMOUNT (₹)</th>
+                  <th style={{ textAlign: 'left', padding: '16px', width: '40%' }}>SWEET</th>
+                  <th style={{ textAlign: 'left', padding: '16px', width: '6%' }}>MODE</th>
+                  <th style={{ textAlign: 'left', padding: '16px', width: '8%' }}>GROSS (KG)</th>
+                  <th style={{ textAlign: 'left', padding: '16px', width: '8%' }}>TRAY (KG)</th>
+                  <th style={{ textAlign: 'left', padding: '16px', width: '6%' }}>NET (KG)</th>
+                  <th style={{ textAlign: 'left', padding: '16px', width: '6%' }}>COUNT</th>
+                  <th style={{ textAlign: 'right', padding: '16px', width: '10%' }}>UNIT PRICE</th>
+                  <th style={{ textAlign: 'right', padding: '16px', width: '10%' }}>AMOUNT (₹)</th>
                   <th style={{ padding: '16px', width: '60px' }}></th>
                 </tr>
               </thead>
