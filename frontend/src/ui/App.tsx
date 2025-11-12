@@ -118,15 +118,6 @@ export default function InvoiceApp() {
     fontFamily: 'inherit',
   } as React.CSSProperties
 
-  const buttonStyle = {
-    padding: '6px 12px',
-    fontSize: '13px',
-    border: 'none',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    fontWeight: 500,
-  } as React.CSSProperties
-
   // Create Invoice
   // async function createInvoice() {
   //   setCreating(true)
@@ -951,10 +942,10 @@ export default function InvoiceApp() {
                   <th style={{ textAlign: 'left', padding: '16px', width: '5%' }}>GROSS (KG)</th>
                   <th style={{ textAlign: 'left', padding: '16px', width: '5%' }}>TRAY (KG)</th>
                   <th style={{ textAlign: 'left', padding: '16px', width: '5%' }}>NET (KG)</th>
-                  <th style={{ textAlign: 'left', padding: '16px', width: '10%' }}>COUNT</th>
-                  <th style={{ textAlign: 'right', padding: '16px', width: '8%' }}>UNIT PRICE</th>
+                  <th style={{ textAlign: 'left', padding: '16px', width: '12%' }}>COUNT</th>
+                  <th style={{ textAlign: 'right', padding: '16px', width: '10%' }}>UNIT PRICE</th>
                   <th style={{ textAlign: 'right', padding: '16px', width: '10%' }}>AMOUNT (₹)</th>
-                  <th style={{ padding: '16px', width: '60px' }}></th>
+                  <th style={{ padding: '16px', width: '30px' }}></th>
                 </tr>
               </thead>
 
@@ -1142,16 +1133,27 @@ export default function InvoiceApp() {
                         {amount.toFixed(2)}
                       </td>
 
-                      <td style={{ padding: '12px 16px', textAlign: 'center' }}>
+                      <td style={{ padding: '4px', textAlign: 'center', position: 'relative' }}>
                         <button
                           onClick={() => removeRow(idx)}
                           style={{
-                            ...buttonStyle,
+                            width: '20px',
+                            height: '20px',
+                            borderRadius: '50%',
+                            border: '1px solid #dc2626',
                             background: '#fee2e2',
                             color: '#dc2626',
+                            fontSize: '12px',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            padding: '0',
                           }}
+                          title="Remove row"
                         >
-                          Remove
+                          ×
                         </button>
                       </td>
                     </tr>
