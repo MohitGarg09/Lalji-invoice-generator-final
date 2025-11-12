@@ -1093,13 +1093,14 @@ export default function InvoiceApp() {
                         />
                       </td>
 
-                      <td style={{ padding: '12px 16px' }}>
+                      <td style={{ padding: '12px 4px 12px 16px', textAlign: 'right' }}>
                         <div
                           style={{
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'flex-end',
-                            gap: '8px',
+                            gap: '4px',
+                            width: '100%',
                           }}
                         >
                           <input
