@@ -939,7 +939,11 @@ export default function InvoiceApp() {
               borderRadius: '12px',
             }}
           >
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <table style={{ 
+              width: '100%', 
+              borderCollapse: 'collapse',
+              tableLayout: 'fixed'
+            }}>
               <thead>
                 <tr style={{ background: 'linear-gradient(to right, #f9fafb, #f3f4f6)' }}>
                   <th style={{ textAlign: 'left', padding: '16px', width: '40%' }}>SWEET</th>
@@ -965,7 +969,11 @@ export default function InvoiceApp() {
 
                   return (
                     <tr key={idx} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                      <td style={{ padding: '12px 16px' }}>
+                      <td style={{ 
+                        padding: '12px 16px', 
+                        minWidth: '200px',
+                        width: '40%'
+                      }}>
                         <SweetDropdown
                           sweets={sweets}
                           products={products}
