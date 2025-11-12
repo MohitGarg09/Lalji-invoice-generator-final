@@ -642,14 +642,51 @@ export default function InvoiceApp() {
   }
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        padding: '32px 24px',
-        fontFamily: 'system-ui, -apple-system, sans-serif',
-      }}
-    >
+    <>
+      <style>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        @keyframes pulse {
+          0%, 100% {
+            transform: scale(1);
+          }
+          50% {
+            transform: scale(1.05);
+          }
+        }
+        
+        @keyframes shimmer {
+          0% {
+            background-position: -200px 0;
+          }
+          100% {
+            background-position: calc(200px + 100%) 0;
+          }
+        }
+        
+        .loading-shimmer {
+          background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+          background-size: 200px 100%;
+          animation: shimmer 1.5s infinite;
+        }
+      `}</style>
+      <div
+        style={{
+          minHeight: '100vh',
+          background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+          padding: '20px',
+          fontFamily: 'system-ui, -apple-system, sans-serif',
+        }}
+      >
       <div
         style={{
           maxWidth: '1400px',
@@ -1011,7 +1048,24 @@ export default function InvoiceApp() {
                   const amount = it.amount || 0
 
                   return (
-                    <tr key={idx} style={{ borderBottom: '1px solid #f3f4f6' }}>
+                    <tr 
+                      key={idx} 
+                      style={{ 
+                        borderBottom: '1px solid #f3f4f6',
+                        animation: 'fadeInUp 0.3s ease-out',
+                        transition: 'all 0.2s ease',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = '#f8fafc'
+                        e.currentTarget.style.transform = 'translateY(-1px)'
+                        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'transparent'
+                        e.currentTarget.style.transform = 'translateY(0)'
+                        e.currentTarget.style.boxShadow = 'none'
+                      }}
+                    >
                       <td style={{ 
                         padding: '12px 16px', 
                         minWidth: '100px',
@@ -1297,6 +1351,25 @@ export default function InvoiceApp() {
               cursor: 'pointer',
               fontWeight: 600,
               boxShadow: '0 4px 12px rgba(102, 126, 234, 0.4)',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              position: 'relative',
+              overflow: 'hidden',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)'
+              e.currentTarget.style.boxShadow = '0 8px 25px rgba(102, 126, 234, 0.6)'
+              e.currentTarget.style.background = 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0) scale(1)'
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.4)'
+              e.currentTarget.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+            }}
+            onMouseDown={(e) => {
+              e.currentTarget.style.transform = 'translateY(0) scale(0.98)'
+            }}
+            onMouseUp={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)'
             }}
           >
             + Add Item
@@ -1512,5 +1585,6 @@ export default function InvoiceApp() {
         </div>
       </div>
     </div>
+    </>
   )
 }
