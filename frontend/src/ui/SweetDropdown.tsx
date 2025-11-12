@@ -39,7 +39,19 @@ export default function SweetDropdown({ sweets, products = [], value, onChange, 
   const [filteredItems, setFilteredItems] = useState<DropdownItem[]>([])
   const [highlightedIndex, setHighlightedIndex] = useState(-1)
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 })
+  const [isMobile, setIsMobile] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  // Check if mobile on mount and resize
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   // Helper function to check if item is a Sweet
   const isSweet = (item: DropdownItem): item is Sweet => {
@@ -202,7 +214,13 @@ export default function SweetDropdown({ sweets, products = [], value, onChange, 
         }}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
-        style={style}
+        style={{
+          ...style,
+          // Mobile-responsive improvements
+          fontSize: isMobile ? '16px' : style?.fontSize || '14px',
+          padding: isMobile ? '12px 16px' : style?.padding || '8px 12px',
+          minHeight: isMobile ? '48px' : 'auto',
+        }}
         autoComplete="off"
       />
       
