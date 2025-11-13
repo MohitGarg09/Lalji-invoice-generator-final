@@ -942,10 +942,10 @@ export default function InvoiceApp() {
     style={{
       flex: 1,
       background: 'rgba(255, 255, 255, 0.8)',
-      border: '2px solid rgba(255, 165, 0, 0.2)',
+      border: '2px solid rgba(197, 48, 48, 0.2)',
       borderRadius: '16px',
       padding: '24px',
-      boxShadow: '0 8px 25px rgba(255, 107, 53, 0.1)',
+      boxShadow: '0 8px 25px rgba(197, 48, 48, 0.1)',
       backdropFilter: 'blur(10px)',
     }}
   >
@@ -954,7 +954,7 @@ export default function InvoiceApp() {
         display: 'block',
         fontSize: '16px',
         fontWeight: 700,
-        color: '#ff6b35',
+        color: '#C53030',
         marginBottom: '16px',
         letterSpacing: '0.5px',
         textTransform: 'uppercase',
@@ -975,7 +975,7 @@ export default function InvoiceApp() {
           padding: '12px 16px',
           borderRadius: '10px',
           transition: 'all 0.2s ease',
-          background: paymentMode === 'cash' ? 'rgba(255, 107, 53, 0.1)' : 'transparent',
+          background: paymentMode === 'cash' ? 'rgba(197, 48, 48, 0.1)' : 'transparent',
           border: paymentMode === 'cash' ? '2px solid rgba(255, 107, 53, 0.3)' : '2px solid transparent',
         }}
         onMouseEnter={(e) => {
@@ -996,7 +996,7 @@ export default function InvoiceApp() {
           checked={paymentMode === 'cash'}
           onChange={() => setPaymentMode('cash')}
           style={{
-            accentColor: '#ff6b35',
+            accentColor: '#C53030',
             transform: 'scale(1.3)',
             cursor: 'pointer',
           }}
@@ -1016,7 +1016,7 @@ export default function InvoiceApp() {
           padding: '12px 16px',
           borderRadius: '10px',
           transition: 'all 0.2s ease',
-          background: paymentMode === 'credit' ? 'rgba(255, 107, 53, 0.1)' : 'transparent',
+          background: paymentMode === 'credit' ? 'rgba(197, 48, 48, 0.1)' : 'transparent',
           border: paymentMode === 'credit' ? '2px solid rgba(255, 107, 53, 0.3)' : '2px solid transparent',
         }}
         onMouseEnter={(e) => {
@@ -1037,7 +1037,7 @@ export default function InvoiceApp() {
           checked={paymentMode === 'credit'}
           onChange={() => setPaymentMode('credit')}
           style={{
-            accentColor: '#ff6b35',
+            accentColor: '#C53030',
             transform: 'scale(1.3)',
             cursor: 'pointer',
           }}
@@ -1053,10 +1053,10 @@ export default function InvoiceApp() {
     style={{
       flex: 1,
       background: 'rgba(255, 255, 255, 0.8)',
-      border: '2px solid rgba(255, 165, 0, 0.2)',
+      border: '2px solid rgba(197, 48, 48, 0.2)',
       borderRadius: '16px',
       padding: '24px',
-      boxShadow: '0 8px 25px rgba(255, 107, 53, 0.1)',
+      boxShadow: '0 8px 25px rgba(197, 48, 48, 0.1)',
       backdropFilter: 'blur(10px)',
     }}
   >
@@ -1065,7 +1065,7 @@ export default function InvoiceApp() {
         display: 'block',
         fontSize: '16px',
         fontWeight: 700,
-        color: '#ff6b35',
+        color: '#C53030',
         marginBottom: '16px',
         letterSpacing: '0.5px',
         textTransform: 'uppercase',
@@ -1086,7 +1086,7 @@ export default function InvoiceApp() {
           padding: '12px 16px',
           borderRadius: '10px',
           transition: 'all 0.2s ease',
-          background: billType === 'GST' ? 'rgba(255, 107, 53, 0.1)' : 'transparent',
+          background: billType === 'GST' ? 'rgba(197, 48, 48, 0.1)' : 'transparent',
           border: billType === 'GST' ? '2px solid rgba(255, 107, 53, 0.3)' : '2px solid transparent',
         }}
         onMouseEnter={(e) => {
@@ -1106,7 +1106,7 @@ export default function InvoiceApp() {
           checked={billType === 'GST'}
           onChange={() => setBillType('GST')}
           style={{
-            accentColor: '#ff6b35',
+            accentColor: '#C53030',
             transform: 'scale(1.3)',
             cursor: 'pointer',
           }}
@@ -1126,7 +1126,7 @@ export default function InvoiceApp() {
           padding: '12px 16px',
           borderRadius: '10px',
           transition: 'all 0.2s ease',
-          background: billType === 'Non-GST' ? 'rgba(255, 107, 53, 0.1)' : 'transparent',
+          background: billType === 'Non-GST' ? 'rgba(197, 48, 48, 0.1)' : 'transparent',
           border: billType === 'Non-GST' ? '2px solid rgba(255, 107, 53, 0.3)' : '2px solid transparent',
         }}
         onMouseEnter={(e) => {
@@ -1146,7 +1146,7 @@ export default function InvoiceApp() {
           checked={billType === 'Non-GST'}
           onChange={() => setBillType('Non-GST')}
           style={{
-            accentColor: '#ff6b35',
+            accentColor: '#C53030',
             transform: 'scale(1.3)',
             cursor: 'pointer',
           }}
@@ -1163,10 +1163,10 @@ export default function InvoiceApp() {
   style={{
     marginBottom: '50px',
     background: 'rgba(255, 248, 240, 0.6)',
-    border: '2px solid rgba(255, 165, 0, 0.2)',
+    border: '2px solid rgba(197, 48, 48, 0.2)',
     borderRadius: '20px',
     padding: '30px',
-    boxShadow: '0 8px 25px rgba(255, 107, 53, 0.1)',
+    boxShadow: '0 8px 25px rgba(197, 48, 48, 0.1)',
     backdropFilter: 'blur(10px)',
     animation: 'fadeInUp 0.6s ease-out 0.6s both',
   }}
@@ -1176,7 +1176,7 @@ export default function InvoiceApp() {
       display: 'block',
       fontSize: '16px',
       fontWeight: 700,
-      color: '#ff6b35',
+      color: '#C53030',
       marginBottom: '12px',
       letterSpacing: '0.5px',
       textTransform: 'uppercase',
@@ -1698,7 +1698,7 @@ export default function InvoiceApp() {
               padding: '30px',
               background: 'rgba(255, 248, 240, 0.6)',
               borderRadius: '20px',
-              border: '1px solid rgba(255, 165, 0, 0.2)',
+              border: '1px solid rgba(197, 48, 48, 0.2)',
               animation: 'fadeInUp 0.6s ease-out 1s both',
             }}
           >
@@ -1719,7 +1719,7 @@ export default function InvoiceApp() {
                   fontSize: '17px',
                   background: creating || sendingWhatsApp || !customerName.trim() || !dmNo.trim() || items.length === 0 || !items.some(it => it.sweetName || it.sweetId)
                     ? 'linear-gradient(135deg, #9ca3af, #6b7280)'
-                    : 'linear-gradient(135deg, #ff6b35, #f7931e)',
+                    : 'linear-gradient(135deg, #C53030, #f7931e)',
                   color: 'white',
                   border: 'none',
                   borderRadius: '12px',
@@ -1832,8 +1832,8 @@ export default function InvoiceApp() {
                 fontWeight: 600,
               }}>
                 Crafted with 🧡 by <strong style={{ 
-                  color: '#ff6b35',
-                  background: 'linear-gradient(135deg, #ff6b35, #f7931e)',
+                  color: '#C53030',
+                  background: 'linear-gradient(135deg, #C53030, #f7931e)',
                   backgroundClip: 'text',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
@@ -1845,13 +1845,13 @@ export default function InvoiceApp() {
                   color: '#888',
                   marginTop: '20px',
                   paddingTop: '20px',
-                  borderTop: '2px solid rgba(255, 165, 0, 0.2)',
+                  borderTop: '2px solid rgba(197, 48, 48, 0.2)',
                 }}
               >
                 <div style={{ 
                   marginBottom: '8px',
                   fontWeight: 600,
-                  color: '#ff6b35',
+                  color: '#C53030',
                 }}>
                   🍽️ © {new Date().getFullYear()} Lalji Caterers Invoice System
                 </div>
