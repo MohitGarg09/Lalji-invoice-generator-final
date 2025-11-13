@@ -266,7 +266,8 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
       
       if (editingProduct) {
         // For editing, verify the product still exists before updating
-        const verifyResponse = await fetch(`${API_BASE}/products/${editingProduct.id}/`)
+        // Include show_inactive=true to access inactive products
+        const verifyResponse = await fetch(`${API_BASE}/products/${editingProduct.id}/?show_inactive=true`)
         if (!verifyResponse.ok) {
           if (verifyResponse.status === 404) {
             alert('Product no longer exists. It may have been deleted by another user.')
@@ -329,8 +330,9 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
     if (!confirm(`Are you sure you want to delete "${existingProduct.name}"?`)) return
     
     try {
-      const url = `${API_BASE}/products/${productId}/`
-      console.log('Deleting product:', { url, productId, productName: existingProduct.name })
+      const url = `${API_BASE}/products/${productId}/?show_inactive=true`
+      console.log('Deleting product:', { url, productId, productName: existingProduct.name, is_active: existingProduct.is_active })
+      console.log('Note: Including show_inactive=true to access inactive products')
       
       const response = await fetch(url, {
         method: 'DELETE'
@@ -373,14 +375,16 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
   // Edit product
   const editProduct = async (product: any) => {
     try {
-      const url = `${API_BASE}/products/${product.id}/`
+      const url = `${API_BASE}/products/${product.id}/?show_inactive=true`
       console.log('=== EDIT PRODUCT DEBUG ===')
       console.log('Product ID:', product.id)
       console.log('API_BASE:', API_BASE)
       console.log('Full URL:', url)
       console.log('Product object:', product)
+      console.log('Product is_active:', product.is_active)
       
       // First, fetch the latest product data from backend
+      // Include show_inactive=true to access inactive products
       const response = await fetch(url)
       
       console.log('Response status:', response.status)
