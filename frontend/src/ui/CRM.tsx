@@ -239,8 +239,12 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
       console.error('=== LOAD PRODUCTS ERROR ===')
       console.error('Error loading products:', error)
       console.error('Error type:', typeof error)
-      console.error('Error message:', error.message)
-      console.error('Stack trace:', error.stack)
+      if (error instanceof Error) {
+        console.error('Error message:', error.message)
+        console.error('Stack trace:', error.stack)
+      } else {
+        console.error('Unknown error:', String(error))
+      }
     }
   }
 
@@ -409,9 +413,16 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
       console.error('=== EDIT PRODUCT ERROR ===')
       console.error('Error editing product:', error)
       console.error('Error type:', typeof error)
-      console.error('Error message:', error.message)
-      console.error('Stack trace:', error.stack)
-      alert(`Error loading product data: ${error.message}\n\nPlease check the browser console for more details.`)
+      let errorMessage = 'Unknown error occurred'
+      if (error instanceof Error) {
+        console.error('Error message:', error.message)
+        console.error('Stack trace:', error.stack)
+        errorMessage = error.message
+      } else {
+        console.error('Unknown error:', String(error))
+        errorMessage = String(error)
+      }
+      alert(`Error loading product data: ${errorMessage}\n\nPlease check the browser console for more details.`)
       loadProducts()
     }
   }
