@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import CRM from './CRM'
 import SweetDropdown from './SweetDropdown'
+import LaljiLogo from './LaljiLogo'
 
 type Sweet = {
   id: number
@@ -660,12 +661,23 @@ export default function InvoiceApp() {
           }
         }
         
+        @keyframes slideInRight {
+          from {
+            opacity: 0;
+            transform: translateX(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+        
         @keyframes pulse {
           0%, 100% {
             transform: scale(1);
           }
           50% {
-            transform: scale(1.05);
+            transform: scale(1.03);
           }
         }
         
@@ -678,79 +690,200 @@ export default function InvoiceApp() {
           }
         }
         
+        @keyframes float {
+          0%, 100% {
+            transform: translateY(0px);
+          }
+          50% {
+            transform: translateY(-6px);
+          }
+        }
+        
+        @keyframes glow {
+          0%, 100% {
+            box-shadow: 0 0 20px rgba(197, 48, 48, 0.3);
+          }
+          50% {
+            box-shadow: 0 0 30px rgba(197, 48, 48, 0.5);
+          }
+        }
+        
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        
         .loading-shimmer {
-          background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+          background: linear-gradient(90deg, #C53030 25%, #E53E3E 50%, #C53030 75%);
           background-size: 200px 100%;
           animation: shimmer 1.5s infinite;
         }
+        
+        .card-hover {
+          transition: all 0.2s ease;
+        }
+        
+        .card-hover:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 15px 35px rgba(197, 48, 48, 0.15);
+        }
+        
+        .input-focus {
+          transition: all 0.2s ease;
+        }
+        
+        .input-focus:focus {
+          transform: translateY(-1px);
+          box-shadow: 0 6px 20px rgba(197, 48, 48, 0.2);
+          border-color: #C53030;
+        }
+        
+        .button-hover {
+          transition: all 0.2s ease;
+        }
+        
+        .button-hover:hover:not(:disabled) {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 25px rgba(197, 48, 48, 0.3);
+        }
+        
+        .lalji-pattern {
+          background-image: 
+            radial-gradient(circle at 20% 20%, rgba(197, 48, 48, 0.08) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(56, 161, 105, 0.06) 0%, transparent 50%),
+            radial-gradient(circle at 40% 60%, rgba(214, 158, 46, 0.04) 0%, transparent 50%);
+        }
       `}</style>
       <div
+        className="lalji-pattern"
         style={{
           minHeight: '100vh',
-          background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+          background: 'linear-gradient(135deg, #fef5f5 0%, #fef2f2 25%, #f0fff4 50%, #fffbeb 75%, #fef5f5 100%)',
           padding: '20px',
-          fontFamily: 'system-ui, -apple-system, sans-serif',
+          fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif',
         }}
       >
       <div
+        className="card-hover"
         style={{
           maxWidth: '1400px',
           margin: '0 auto',
-          background: 'white',
-          borderRadius: '16px',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+          background: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(20px)',
+          borderRadius: '24px',
+          boxShadow: '0 25px 80px rgba(255, 107, 53, 0.15), 0 0 0 1px rgba(255,255,255,0.2)',
           overflow: 'hidden',
+          border: '1px solid rgba(255, 165, 0, 0.1)',
+          animation: 'fadeInUp 0.8s ease-out',
         }}
       >
         {/* Header */}
         <div
           style={{
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            padding: '32px 40px',
+            background: 'linear-gradient(135deg, #C53030 0%, #E53E3E 25%, #38A169 50%, #D69E2E 75%, #C53030 100%)',
+            padding: '40px 50px',
             color: 'white',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
+            position: 'relative',
+            overflow: 'hidden',
           }}
         >
-          <div>
-            <h1 style={{ margin: 0, fontSize: '32px', fontWeight: 700 }}>
-              Invoice Generator
-            </h1>
-            <p style={{ margin: '8px 0 0 0', opacity: 0.9, fontSize: '16px' }}>
-              Create and manage your invoices efficiently
-            </p>
+          {/* Decorative elements */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '-50px',
+              right: '-50px',
+              width: '150px',
+              height: '150px',
+              background: 'rgba(255, 255, 255, 0.08)',
+              borderRadius: '50%',
+              animation: 'float 3s ease-in-out infinite',
+            }}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '-30px',
+              left: '-30px',
+              width: '100px',
+              height: '100px',
+              background: 'rgba(255, 255, 255, 0.06)',
+              borderRadius: '50%',
+              animation: 'float 2.5s ease-in-out infinite 0.5s',
+            }}
+          />
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '25px', zIndex: 1 }}>
+            <LaljiLogo size="small" showText={false} animated={true} />
+            <div>
+              <h1 style={{ 
+                margin: 0, 
+                fontSize: '36px', 
+                fontWeight: 800,
+                letterSpacing: '-1px',
+                textShadow: '0 2px 4px rgba(0,0,0,0.2)',
+              }}>
+                Lalji Caterers
+              </h1>
+              <p style={{ 
+                margin: '8px 0 0 0', 
+                opacity: 0.95, 
+                fontSize: '18px',
+                fontWeight: 500,
+                letterSpacing: '0.5px',
+              }}>
+                Professional Invoice Management
+              </p>
+            </div>
           </div>
+          
           <button
             onClick={() => setCurrentPage('crm')}
+            className="button-hover"
             style={{
-              padding: '12px 24px',
-              fontSize: '15px',
+              padding: '16px 28px',
+              fontSize: '16px',
               background: 'rgba(255,255,255,0.2)',
               color: 'white',
-              border: '2px solid white',
-              borderRadius: '8px',
+              border: '2px solid rgba(255,255,255,0.3)',
+              borderRadius: '12px',
               cursor: 'pointer',
-              fontWeight: 600,
+              fontWeight: 700,
+              letterSpacing: '0.5px',
+              textTransform: 'uppercase',
+              backdropFilter: 'blur(10px)',
+              zIndex: 1,
             }}
           >
-            View CRM
+            📊 View CRM
           </button>
         </div>
 
-        <div style={{ padding: '40px' }}>
+        <div style={{ padding: '50px' }}>
           {/* Customer Name */}
-          <div style={{ marginBottom: '32px' }}>
+          <div className="card-hover" style={{ 
+            marginBottom: '40px',
+            background: 'rgba(255, 248, 240, 0.6)',
+            padding: '30px',
+            borderRadius: '20px',
+            border: '1px solid rgba(255, 165, 0, 0.2)',
+            animation: 'fadeInUp 0.6s ease-out 0.2s both',
+          }}>
             <label
               style={{
                 display: 'block',
-                fontSize: '14px',
-                fontWeight: 600,
-                color: '#374151',
-                marginBottom: '8px',
+                fontSize: '16px',
+                fontWeight: 700,
+                color: '#ff6b35',
+                marginBottom: '12px',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
               }}
             >
-              Customer Name
+              👤 Customer Name
             </label>
             <input
               ref={(el) => {
@@ -770,146 +903,201 @@ export default function InvoiceApp() {
                   dmNoInput?.focus()
                 }
               }}
+              className="input-focus"
               style={{
-                ...inputStyle,
-                padding: '12px 16px',
-                fontSize: '15px',
-                border: '2px solid #e5e7eb',
+                width: '100%',
+                padding: '16px 20px',
+                fontSize: '16px',
+                border: '2px solid rgba(255, 165, 0, 0.3)',
+                borderRadius: '12px',
+                outline: 'none',
+                fontFamily: 'inherit',
+                background: 'rgba(255, 255, 255, 0.8)',
+                backdropFilter: 'blur(10px)',
+                fontWeight: 500,
+                boxSizing: 'border-box',
               }}
             />
           </div>
 
 {/* Toggles Section */}
 <div
+  className="card-hover"
   style={{
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: '40px',
-    gap: '40px',
+    marginBottom: '50px',
+    gap: '30px',
+    background: 'rgba(255, 248, 240, 0.4)',
+    padding: '30px',
+    borderRadius: '20px',
+    border: '1px solid rgba(255, 165, 0, 0.15)',
+    animation: 'fadeInUp 0.6s ease-out 0.4s both',
   }}
 >
   {/* Mode Toggle */}
   <div
+    className="card-hover"
     style={{
       flex: 1,
-      backgroundColor: '#f9fafb',
-      border: '2px solid #e5e7eb',
-      borderRadius: '10px',
-      padding: '16px 20px',
-      boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-      transition: '0.2s ease',
+      background: 'rgba(255, 255, 255, 0.8)',
+      border: '2px solid rgba(255, 165, 0, 0.2)',
+      borderRadius: '16px',
+      padding: '24px',
+      boxShadow: '0 8px 25px rgba(255, 107, 53, 0.1)',
+      backdropFilter: 'blur(10px)',
     }}
   >
     <span
       style={{
         display: 'block',
-        fontSize: '14px',
-        fontWeight: 600,
-        color: '#374151',
-        marginBottom: '12px',
+        fontSize: '16px',
+        fontWeight: 700,
+        color: '#ff6b35',
+        marginBottom: '16px',
+        letterSpacing: '0.5px',
+        textTransform: 'uppercase',
       }}
     >
-      Mode
+      💳 Payment Mode
     </span>
-    <div style={{ display: 'flex', gap: '24px' }}>
-<label
-  style={{
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    fontSize: '15px',
-    color: '#374151',
-    cursor: 'pointer',
-    transition: '0.2s',
-  }}
->
-  <input
-    type="radio"
-    name="paymentMode"
-    value="cash"
-    checked={paymentMode === 'cash'}
-    onChange={() => setPaymentMode('cash')}
-    onKeyDown={(e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault()
-        // Focus on bill type toggle (first radio button)
-        const billTypeToggle = document.querySelector('input[name="billType"][checked]') as HTMLElement || 
-                              document.querySelector('input[name="billType"]') as HTMLElement
-        billTypeToggle?.focus()
-      }
-    }}
-    style={{
-      accentColor: '#10b981',
-      transform: 'scale(1.15)',
-      cursor: 'pointer',
-    }}
-  />
-  <span>Cash</span>
-</label>
+    <div style={{ display: 'flex', gap: '20px' }}>
+      <label
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          fontSize: '16px',
+          color: '#333',
+          cursor: 'pointer',
+          fontWeight: 600,
+          padding: '12px 16px',
+          borderRadius: '10px',
+          transition: 'all 0.2s ease',
+          background: paymentMode === 'cash' ? 'rgba(255, 107, 53, 0.1)' : 'transparent',
+          border: paymentMode === 'cash' ? '2px solid rgba(255, 107, 53, 0.3)' : '2px solid transparent',
+        }}
+        onMouseEnter={(e) => {
+          if (paymentMode !== 'cash') {
+            e.currentTarget.style.background = 'rgba(255, 107, 53, 0.05)'
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (paymentMode !== 'cash') {
+            e.currentTarget.style.background = 'transparent'
+          }
+        }}
+      >
+        <input
+          type="radio"
+          name="paymentMode"
+          value="cash"
+          checked={paymentMode === 'cash'}
+          onChange={() => setPaymentMode('cash')}
+          style={{
+            accentColor: '#ff6b35',
+            transform: 'scale(1.3)',
+            cursor: 'pointer',
+          }}
+        />
+        <span>💵 Cash</span>
+      </label>
 
-<label
-  style={{
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    fontSize: '15px',
-    color: '#374151',
-    cursor: 'pointer',
-    transition: '0.2s',
-  }}
->
-  <input
-    type="radio"
-    name="paymentMode"
-    value="credit"
-    checked={paymentMode === 'credit'}
-    onChange={() => setPaymentMode('credit')}
-    style={{
-      accentColor: '#10b981',
-      transform: 'scale(1.15)',
-      cursor: 'pointer',
-    }}
-  />
-  <span>Credit</span>
-</label>
-
+      <label
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          fontSize: '16px',
+          color: '#333',
+          cursor: 'pointer',
+          fontWeight: 600,
+          padding: '12px 16px',
+          borderRadius: '10px',
+          transition: 'all 0.2s ease',
+          background: paymentMode === 'credit' ? 'rgba(255, 107, 53, 0.1)' : 'transparent',
+          border: paymentMode === 'credit' ? '2px solid rgba(255, 107, 53, 0.3)' : '2px solid transparent',
+        }}
+        onMouseEnter={(e) => {
+          if (paymentMode !== 'credit') {
+            e.currentTarget.style.background = 'rgba(255, 107, 53, 0.05)'
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (paymentMode !== 'credit') {
+            e.currentTarget.style.background = 'transparent'
+          }
+        }}
+      >
+        <input
+          type="radio"
+          name="paymentMode"
+          value="credit"
+          checked={paymentMode === 'credit'}
+          onChange={() => setPaymentMode('credit')}
+          style={{
+            accentColor: '#ff6b35',
+            transform: 'scale(1.3)',
+            cursor: 'pointer',
+          }}
+        />
+        <span>💳 Credit</span>
+      </label>
     </div>
   </div>
 
   {/* Bill Type Toggle */}
   <div
+    className="card-hover"
     style={{
       flex: 1,
-      backgroundColor: '#f9fafb',
-      border: '2px solid #e5e7eb',
-      borderRadius: '10px',
-      padding: '16px 20px',
-      boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-      transition: '0.2s ease',
+      background: 'rgba(255, 255, 255, 0.8)',
+      border: '2px solid rgba(255, 165, 0, 0.2)',
+      borderRadius: '16px',
+      padding: '24px',
+      boxShadow: '0 8px 25px rgba(255, 107, 53, 0.1)',
+      backdropFilter: 'blur(10px)',
     }}
   >
     <span
       style={{
         display: 'block',
-        fontSize: '14px',
-        fontWeight: 600,
-        color: '#374151',
-        marginBottom: '12px',
+        fontSize: '16px',
+        fontWeight: 700,
+        color: '#ff6b35',
+        marginBottom: '16px',
+        letterSpacing: '0.5px',
+        textTransform: 'uppercase',
       }}
     >
-      Bill Type
+      📄 Bill Type
     </span>
-    <div style={{ display: 'flex', gap: '24px' }}>
+    <div style={{ display: 'flex', gap: '20px' }}>
       <label
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '8px',
-          fontSize: '15px',
-          color: '#374151',
+          gap: '12px',
+          fontSize: '16px',
+          color: '#333',
           cursor: 'pointer',
-          transition: '0.2s',
+          fontWeight: 600,
+          padding: '12px 16px',
+          borderRadius: '10px',
+          transition: 'all 0.2s ease',
+          background: billType === 'GST' ? 'rgba(255, 107, 53, 0.1)' : 'transparent',
+          border: billType === 'GST' ? '2px solid rgba(255, 107, 53, 0.3)' : '2px solid transparent',
+        }}
+        onMouseEnter={(e) => {
+          if (billType !== 'GST') {
+            e.currentTarget.style.background = 'rgba(255, 107, 53, 0.05)'
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (billType !== 'GST') {
+            e.currentTarget.style.background = 'transparent'
+          }
         }}
       >
         <input
@@ -917,32 +1105,39 @@ export default function InvoiceApp() {
           name="billType"
           checked={billType === 'GST'}
           onChange={() => setBillType('GST')}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault()
-              // Focus on DM No input
-              const dmNoInput = document.querySelector('input[placeholder="Enter DM number (required)"]') as HTMLElement
-              dmNoInput?.focus()
-            }
-          }}
           style={{
-            accentColor: '#3b82f6',
-            transform: 'scale(1.15)',
+            accentColor: '#ff6b35',
+            transform: 'scale(1.3)',
             cursor: 'pointer',
           }}
         />
-        <span>GST</span>
+        <span>🏢 GST</span>
       </label>
 
       <label
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '8px',
-          fontSize: '15px',
-          color: '#374151',
+          gap: '12px',
+          fontSize: '16px',
+          color: '#333',
           cursor: 'pointer',
-          transition: '0.2s',
+          fontWeight: 600,
+          padding: '12px 16px',
+          borderRadius: '10px',
+          transition: 'all 0.2s ease',
+          background: billType === 'Non-GST' ? 'rgba(255, 107, 53, 0.1)' : 'transparent',
+          border: billType === 'Non-GST' ? '2px solid rgba(255, 107, 53, 0.3)' : '2px solid transparent',
+        }}
+        onMouseEnter={(e) => {
+          if (billType !== 'Non-GST') {
+            e.currentTarget.style.background = 'rgba(255, 107, 53, 0.05)'
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (billType !== 'Non-GST') {
+            e.currentTarget.style.background = 'transparent'
+          }
         }}
       >
         <input
@@ -951,12 +1146,12 @@ export default function InvoiceApp() {
           checked={billType === 'Non-GST'}
           onChange={() => setBillType('Non-GST')}
           style={{
-            accentColor: '#3b82f6',
-            transform: 'scale(1.15)',
+            accentColor: '#ff6b35',
+            transform: 'scale(1.3)',
             cursor: 'pointer',
           }}
         />
-        <span>Non-GST</span>
+        <span>📝 Non-GST</span>
       </label>
     </div>
   </div>
@@ -964,26 +1159,30 @@ export default function InvoiceApp() {
 
 {/* DM No. Input Box */}
 <div
+  className="card-hover"
   style={{
-    flex: 1,
-    backgroundColor: '#f9fafb',
-    border: '2px solid #e5e7eb',
-    borderRadius: '10px',
-    padding: '16px 40px 10px 20px',
-    boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-    transition: '0.2s ease',
+    marginBottom: '50px',
+    background: 'rgba(255, 248, 240, 0.6)',
+    border: '2px solid rgba(255, 165, 0, 0.2)',
+    borderRadius: '20px',
+    padding: '30px',
+    boxShadow: '0 8px 25px rgba(255, 107, 53, 0.1)',
+    backdropFilter: 'blur(10px)',
+    animation: 'fadeInUp 0.6s ease-out 0.6s both',
   }}
 >
   <label
     style={{
       display: 'block',
-      fontSize: '14px',
-      fontWeight: 600,
-      color: '#374151',
+      fontSize: '16px',
+      fontWeight: 700,
+      color: '#ff6b35',
       marginBottom: '12px',
+      letterSpacing: '0.5px',
+      textTransform: 'uppercase',
     }}
   >
-    DM No. *
+    📋 DM Number *
   </label>
   <input
     type="text"
@@ -999,15 +1198,19 @@ export default function InvoiceApp() {
       }
     }}
     required
+    className="input-focus"
     style={{
       width: '100%',
-      padding: '10px 14px',
-      fontSize: '15px',
-      border: '2px solid #e5e7eb',
-      borderRadius: '8px',
+      padding: '16px 20px',
+      fontSize: '16px',
+      border: '2px solid rgba(255, 165, 0, 0.3)',
+      borderRadius: '12px',
       outline: 'none',
-      backgroundColor: 'white',
+      background: 'rgba(255, 255, 255, 0.8)',
+      backdropFilter: 'blur(10px)',
       fontFamily: 'inherit',
+      fontWeight: 500,
+      boxSizing: 'border-box',
     }}
   />
 </div>
@@ -1489,100 +1692,174 @@ export default function InvoiceApp() {
 
           {/* Action Buttons */}
           <div
+            className="card-hover"
             style={{
-              marginTop: '32px',
-              display: 'flex',
-              gap: '12px',
-              justifyContent: 'flex-end',
-              flexWrap: 'wrap',
+              marginTop: '50px',
+              padding: '30px',
+              background: 'rgba(255, 248, 240, 0.6)',
+              borderRadius: '20px',
+              border: '1px solid rgba(255, 165, 0, 0.2)',
+              animation: 'fadeInUp 0.6s ease-out 1s both',
             }}
           >
-            <button
-              disabled={creating || sendingWhatsApp || !customerName.trim() || !dmNo.trim() || items.length === 0 || !items.some(it => it.sweetName || it.sweetId)}
-              onClick={createInvoice}
+            <div
               style={{
-                padding: '14px 32px',
-                fontSize: '16px',
-                background: creating || sendingWhatsApp || !customerName.trim() || !dmNo.trim() || items.length === 0 || !items.some(it => it.sweetName || it.sweetId)
-                  ? '#9ca3af'
-                  : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: creating || sendingWhatsApp || !customerName.trim() || !dmNo.trim() || items.length === 0 || !items.some(it => it.sweetName || it.sweetId) ? 'not-allowed' : 'pointer',
-                fontWeight: 600,
-              }}
-            >
-              {creating ? 'Creating...' : 'Create Invoice'}
-            </button>
-
-            <button
-              disabled={creating || sendingWhatsApp || !customerName.trim() || !dmNo.trim() || items.length === 0 || !items.some(it => it.sweetName || it.sweetId)}
-              onClick={sendViaWhatsApp}
-              style={{
-                padding: '14px 32px',
-                fontSize: '16px',
-                background: creating || sendingWhatsApp || !customerName.trim() || !dmNo.trim() || items.length === 0 || !items.some(it => it.sweetName || it.sweetId)
-                  ? '#9ca3af'
-                  : 'linear-gradient(135deg, #25d366 0%, #128c7e 100%)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: creating || sendingWhatsApp || !customerName.trim() || !dmNo.trim() || items.length === 0 || !items.some(it => it.sweetName || it.sweetId) ? 'not-allowed' : 'pointer',
-                fontWeight: 600,
                 display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
+                gap: '20px',
+                justifyContent: 'center',
+                flexWrap: 'wrap',
               }}
-              title="Create invoice and send via WhatsApp"
             >
-              {sendingWhatsApp ? (
-                <>Creating & Sending...</>
-              ) : (
-                <>
-                  <span>📱</span>
-                  <span>Create Invoice and Send via WhatsApp</span>
-                </>
-              )}
-            </button>
+              <button
+                disabled={creating || sendingWhatsApp || !customerName.trim() || !dmNo.trim() || items.length === 0 || !items.some(it => it.sweetName || it.sweetId)}
+                onClick={createInvoice}
+                className="button-hover"
+                style={{
+                  padding: '18px 40px',
+                  fontSize: '17px',
+                  background: creating || sendingWhatsApp || !customerName.trim() || !dmNo.trim() || items.length === 0 || !items.some(it => it.sweetName || it.sweetId)
+                    ? 'linear-gradient(135deg, #9ca3af, #6b7280)'
+                    : 'linear-gradient(135deg, #ff6b35, #f7931e)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '12px',
+                  cursor: creating || sendingWhatsApp || !customerName.trim() || !dmNo.trim() || items.length === 0 || !items.some(it => it.sweetName || it.sweetId) ? 'not-allowed' : 'pointer',
+                  fontWeight: 700,
+                  letterSpacing: '0.5px',
+                  textTransform: 'uppercase',
+                  boxShadow: creating || sendingWhatsApp || !customerName.trim() || !dmNo.trim() || items.length === 0 || !items.some(it => it.sweetName || it.sweetId)
+                    ? 'none'
+                    : '0 8px 25px rgba(255, 107, 53, 0.3)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  minWidth: '200px',
+                  justifyContent: 'center',
+                }}
+              >
+                {creating ? (
+                  <>
+                    <span style={{ 
+                      width: '20px', 
+                      height: '20px', 
+                      border: '2px solid rgba(255,255,255,0.3)',
+                      borderTop: '2px solid white',
+                      borderRadius: '50%',
+                      animation: 'spin 1s linear infinite'
+                    }} />
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    <span>📄</span>
+                    Create Invoice
+                  </>
+                )}
+              </button>
+
+              <button
+                disabled={creating || sendingWhatsApp || !customerName.trim() || !dmNo.trim() || items.length === 0 || !items.some(it => it.sweetName || it.sweetId)}
+                onClick={sendViaWhatsApp}
+                className="button-hover"
+                style={{
+                  padding: '18px 40px',
+                  fontSize: '17px',
+                  background: creating || sendingWhatsApp || !customerName.trim() || !dmNo.trim() || items.length === 0 || !items.some(it => it.sweetName || it.sweetId)
+                    ? 'linear-gradient(135deg, #9ca3af, #6b7280)'
+                    : 'linear-gradient(135deg, #25d366, #128c7e)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '12px',
+                  cursor: creating || sendingWhatsApp || !customerName.trim() || !dmNo.trim() || items.length === 0 || !items.some(it => it.sweetName || it.sweetId) ? 'not-allowed' : 'pointer',
+                  fontWeight: 700,
+                  letterSpacing: '0.5px',
+                  textTransform: 'uppercase',
+                  boxShadow: creating || sendingWhatsApp || !customerName.trim() || !dmNo.trim() || items.length === 0 || !items.some(it => it.sweetName || it.sweetId)
+                    ? 'none'
+                    : '0 8px 25px rgba(37, 211, 102, 0.3)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  minWidth: '280px',
+                  justifyContent: 'center',
+                }}
+                title="Create invoice and send via WhatsApp"
+              >
+                {sendingWhatsApp ? (
+                  <>
+                    <span style={{ 
+                      width: '20px', 
+                      height: '20px', 
+                      border: '2px solid rgba(255,255,255,0.3)',
+                      borderTop: '2px solid white',
+                      borderRadius: '50%',
+                      animation: 'spin 1s linear infinite'
+                    }} />
+                    Creating & Sending...
+                  </>
+                ) : (
+                  <>
+                    <span>📱</span>
+                    <span>Create & Send via WhatsApp</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
 
           {/* Footer with Developer Credits */}
           <div
             style={{
-              marginTop: '60px',
-              paddingTop: '32px',
-              borderTop: '2px solid #e5e7eb',
+              marginTop: '80px',
+              padding: '40px 30px',
+              background: 'linear-gradient(135deg, rgba(255, 107, 53, 0.05), rgba(247, 147, 30, 0.05))',
+              borderRadius: '20px',
+              border: '1px solid rgba(255, 165, 0, 0.1)',
               textAlign: 'center',
+              animation: 'fadeInUp 0.6s ease-out 1.2s both',
             }}
           >
             <div
               style={{
-                fontSize: '14px',
-                color: '#6b7280',
+                fontSize: '16px',
+                color: '#666',
                 lineHeight: '1.8',
               }}
             >
-              <div style={{ marginBottom: '8px' }}>
-                Made with ❤️ by <strong style={{ color: '#374151' }}>Mohit Garg</strong>
+              <div style={{ 
+                marginBottom: '16px',
+                fontSize: '18px',
+                fontWeight: 600,
+              }}>
+                Crafted with 🧡 by <strong style={{ 
+                  color: '#ff6b35',
+                  background: 'linear-gradient(135deg, #ff6b35, #f7931e)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                }}>Mohit Garg</strong>
               </div>
               <div
                 style={{
-                  fontSize: '12px',
-                  color: '#9ca3af',
-                  marginTop: '12px',
-                  paddingTop: '12px',
-                  borderTop: '1px solid #e5e7eb',
+                  fontSize: '14px',
+                  color: '#888',
+                  marginTop: '20px',
+                  paddingTop: '20px',
+                  borderTop: '2px solid rgba(255, 165, 0, 0.2)',
                 }}
               >
-                <div style={{ marginBottom: '4px' }}>
-                  © {new Date().getFullYear()} Lalji Invoice Generator. All rights reserved by Lalji Caterers.
+                <div style={{ 
+                  marginBottom: '8px',
+                  fontWeight: 600,
+                  color: '#ff6b35',
+                }}>
+                  🍽️ © {new Date().getFullYear()} Lalji Caterers Invoice System
                 </div>
-                <div style={{ marginBottom: '4px' }}>
-                  This software is proprietary and confidential.
+                <div style={{ marginBottom: '6px', fontSize: '13px' }}>
+                  Professional Invoice Management Solution
                 </div>
-                <div>
-                  Unauthorized copying, distribution, or use is strictly prohibited.
+                <div style={{ fontSize: '12px', opacity: 0.8 }}>
+                  Proprietary & Confidential • Unauthorized use prohibited
                 </div>
               </div>
             </div>
