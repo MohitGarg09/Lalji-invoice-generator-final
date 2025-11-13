@@ -64,7 +64,7 @@ class SweetViewSet(viewsets.ModelViewSet):
         try:
             # Delete all sweet records (this will clear the dropdown)
             deleted_count, deleted_details = Sweet.objects.all().delete()
-            print(f"Deleted {deleted_count} sweet records: {deleted_details}")  # Debug log
+            # Sweet records deleted successfully
             
             return Response({
                 'success': True, 
