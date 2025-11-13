@@ -1255,10 +1255,17 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
                                 value={it.sweet_name || selectedSweet?.name || ''}
                                 onChange={(value, item) => {
                                   if (item) {
+                                    // Determine item type and prices
+                                    const itemType = 'sweet_type' in item ? item.sweet_type : item.product_type
+                                    const pricePerKg = item.price_per_kg
+                                    const pricePerUnit = item.price_per_unit
+                                    
                                     updateItem({ 
                                       sweet: item.id, 
                                       sweet_name: item.name, 
-                                      item_type: it.item_type || ('sweet_type' in item ? item.sweet_type : item.product_type)
+                                      item_type: itemType,
+                                      // Auto-fill unit price based on item type
+                                      unit_price_override: itemType === 'weight' ? pricePerKg : pricePerUnit
                                     })
                                   } else {
                                     updateItem({ sweet: undefined, sweet_name: value })
