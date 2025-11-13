@@ -907,7 +907,7 @@ export default function InvoiceApp() {
         className="lalji-pattern"
         style={{
           minHeight: '100vh',
-          background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
           padding: '20px',
           fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif',
         }}
@@ -920,16 +920,16 @@ export default function InvoiceApp() {
           background: 'rgba(255, 255, 255, 0.95)',
           backdropFilter: 'blur(20px)',
           borderRadius: '24px',
-          boxShadow: '0 25px 80px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0,0,0,0.05)',
+          boxShadow: '0 25px 80px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,255,255,0.2)',
           overflow: 'hidden',
-          border: '1px solid rgba(0, 0, 0, 0.06)',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
           animation: 'fadeInUp 0.3s ease-out',
         }}
       >
         {/* Header */}
         <div
           style={{
-            background: 'linear-gradient(135deg, #1f2937 0%, #374151 100%)',
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
             padding: '40px 50px',
             color: 'white',
             display: 'flex',

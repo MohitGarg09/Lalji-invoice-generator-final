@@ -206,7 +206,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
         className="lalji-pattern"
         style={{
           minHeight: '100vh',
-          background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -260,14 +260,14 @@ export default function Login({ onLoginSuccess }: LoginProps) {
         <div
           className="login-container"
           style={{
-            background: 'rgba(255, 255, 255, 0.98)',
-            backdropFilter: 'blur(10px)',
-            borderRadius: '16px',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.05)',
-            padding: '48px 40px',
-            maxWidth: '420px',
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: '24px',
+            boxShadow: '0 25px 80px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,255,255,0.2)',
+            padding: '60px 50px',
+            maxWidth: '450px',
             width: '100%',
-            border: '1px solid rgba(0, 0, 0, 0.06)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
             position: 'relative',
           }}
         >
@@ -315,7 +315,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
                       width: '100%',
                       padding: '16px 50px 16px 20px',
                       fontSize: '16px',
-                      border: error ? '2px solid #ef4444' : '2px solid rgba(0, 0, 0, 0.1)',
+                      border: error ? '2px solid #ef4444' : '2px solid rgba(255, 255, 255, 0.3)',
                       borderRadius: '12px',
                       boxSizing: 'border-box',
                       outline: 'none',
@@ -380,7 +380,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
                   fontWeight: 700,
                   background: loading || !password.trim()
                     ? 'linear-gradient(135deg, #9ca3af, #6b7280)'
-                    : 'linear-gradient(135deg, #1f2937, #374151)',
+                    : 'linear-gradient(135deg, #667eea, #764ba2)',
                   color: 'white',
                   border: 'none',
                   borderRadius: '12px',
@@ -388,20 +388,20 @@ export default function Login({ onLoginSuccess }: LoginProps) {
                   transition: 'all 0.3s ease',
                   boxShadow: loading || !password.trim() 
                     ? 'none' 
-                    : '0 8px 25px rgba(0, 0, 0, 0.15)',
+                    : '0 8px 25px rgba(102, 126, 234, 0.3)',
                   letterSpacing: '0.5px',
                   textTransform: 'uppercase',
                 }}
                 onMouseEnter={(e) => {
                   if (!loading && password.trim()) {
                     e.currentTarget.style.transform = 'translateY(-2px)'
-                    e.currentTarget.style.boxShadow = '0 12px 35px rgba(0, 0, 0, 0.2)'
+                    e.currentTarget.style.boxShadow = '0 12px 35px rgba(102, 126, 234, 0.4)'
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (!loading && password.trim()) {
                     e.currentTarget.style.transform = 'translateY(0)'
-                    e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)'
+                    e.currentTarget.style.boxShadow = '0 8px 25px rgba(102, 126, 234, 0.3)'
                   }
                 }}
               >

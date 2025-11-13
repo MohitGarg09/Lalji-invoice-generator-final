@@ -26,22 +26,14 @@ export default function LaljiLogo({ size = 'medium', className = '' }: LaljiLogo
     >
       {/* Placeholder for actual logo - you can replace this with an img tag when you have the logo file */}
       <div style={{
-        width: '100%',
-        height: '100%',
-        background: 'linear-gradient(135deg, #C53030 0%, #B91C1C 100%)',
-        borderRadius: '8px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        color: 'white',
+        fontSize: size === 'small' ? '24px' : size === 'medium' ? '32px' : '40px',
         fontWeight: 'bold',
-        fontSize: size === 'small' ? '14px' : size === 'medium' ? '18px' : '24px',
+        color: 'white',
+        textShadow: '0 2px 4px rgba(0,0,0,0.3)',
         fontFamily: 'serif',
-        letterSpacing: '1px',
-        boxShadow: '0 2px 8px rgba(197, 48, 48, 0.2)',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
+        letterSpacing: '2px',
       }}>
-        Lalji Caterers
+        🍽️ Lalji Caterers
       </div>
       
       {/* 
