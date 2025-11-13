@@ -464,33 +464,13 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
   // Update invoice
   const handleUpdate = async (invoice: Invoice) => {
     try {
-      // Enhanced validation: check each item thoroughly
+      // Enhanced validation: directly verify each sweet ID with backend
       const invalidItems: number[] = []
       
       console.log('=== INVOICE UPDATE VALIDATION ===')
       console.log('Invoice items:', invoice.items)
-      console.log('Available sweets:', sweets.map(s => ({ id: s.id, name: s.name })))
-      console.log('Available products:', products.map(p => ({ id: p.id, name: p.name })))
-      console.log('Products array length:', products.length)
-      console.log('Sweets array length:', sweets.length)
       
-      // Force refresh products and sweets before validation
-      console.log('Refreshing products and sweets before validation...')
-      await loadProducts()
-      
-      // Re-fetch sweets as well to ensure we have latest data
-      try {
-        const sweetsResponse = await fetch(`${API_BASE}/sweets/`)
-        if (sweetsResponse.ok) {
-          const sweetsData = await sweetsResponse.json()
-          const latestSweets = Array.isArray(sweetsData) ? sweetsData : sweetsData.results || []
-          setSweets(latestSweets)
-          console.log('Updated sweets:', latestSweets.map((s: Sweet) => ({ id: s.id, name: s.name })))
-        }
-      } catch (error) {
-        console.error('Error refreshing sweets:', error)
-      }
-      
+      // Validate each item by checking directly with the backend
       for (let i = 0; i < invoice.items.length; i++) {
         const item = invoice.items[i]
         console.log(`Item ${i + 1}:`, { sweet: item.sweet, sweet_name: item.sweet_name })
@@ -502,16 +482,36 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
           continue
         }
         
-        // Check if the sweet still exists in our current data (use updated arrays)
-        const sweetExists = sweets.some(s => s.id === item.sweet)
-        const productExists = products.some(p => p.id === item.sweet)
+        // Directly verify with backend - check both sweets and products endpoints
+        let sweetExists = false
+        let productExists = false
         
-        console.log(`Item ${i + 1}: sweet exists=${sweetExists}, product exists=${productExists}`)
-        console.log(`Item ${i + 1}: Looking for ID ${item.sweet} in sweets:`, sweets.map(s => s.id))
-        console.log(`Item ${i + 1}: Looking for ID ${item.sweet} in products:`, products.map(p => p.id))
+        try {
+          // Check if it exists as a sweet
+          const sweetResponse = await fetch(`${API_BASE}/sweets/${item.sweet}/`)
+          if (sweetResponse.ok) {
+            sweetExists = true
+            console.log(`Item ${i + 1}: Found as sweet ID ${item.sweet}`)
+          }
+        } catch (error) {
+          console.log(`Item ${i + 1}: Not found as sweet ID ${item.sweet}`)
+        }
+        
+        if (!sweetExists) {
+          try {
+            // Check if it exists as a product
+            const productResponse = await fetch(`${API_BASE}/products/${item.sweet}/`)
+            if (productResponse.ok) {
+              productExists = true
+              console.log(`Item ${i + 1}: Found as product ID ${item.sweet}`)
+            }
+          } catch (error) {
+            console.log(`Item ${i + 1}: Not found as product ID ${item.sweet}`)
+          }
+        }
         
         if (!sweetExists && !productExists) {
-          console.log(`Item ${i + 1}: Sweet/Product ID ${item.sweet} not found!`)
+          console.log(`Item ${i + 1}: Sweet/Product ID ${item.sweet} does not exist in backend!`)
           invalidItems.push(i + 1)
         }
       }
