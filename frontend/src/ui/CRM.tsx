@@ -457,9 +457,29 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
   // Update invoice
   const handleUpdate = async (invoice: Invoice) => {
     try {
-      // Basic validation: each item must have a valid sweet selected
-      if (!invoice.items.every((it) => typeof it.sweet === 'number' && it.sweet > 0)) {
-        alert('Please select a valid sweet for all items before saving.')
+      // Enhanced validation: check each item thoroughly
+      const invalidItems: number[] = []
+      
+      for (let i = 0; i < invoice.items.length; i++) {
+        const item = invoice.items[i]
+        
+        // Check if item has a sweet selected
+        if (!item.sweet || typeof item.sweet !== 'number' || item.sweet <= 0) {
+          invalidItems.push(i + 1)
+          continue
+        }
+        
+        // Check if the sweet still exists in our current data
+        const sweetExists = sweets.some(s => s.id === item.sweet)
+        const productExists = products.some(p => p.id === item.sweet)
+        
+        if (!sweetExists && !productExists) {
+          invalidItems.push(i + 1)
+        }
+      }
+      
+      if (invalidItems.length > 0) {
+        alert(`Please select valid sweets/products for items: ${invalidItems.join(', ')}.\n\nSome items may reference deleted products. Please reselect them from the dropdown.`)
         return
       }
 
@@ -487,6 +507,25 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
 
       if (!response.ok) {
         const errorText = await response.text()
+        console.error('Update invoice error response:', errorText)
+        
+        // Try to parse the error and provide helpful feedback
+        try {
+          const errorData = JSON.parse(errorText)
+          if (errorData.items) {
+            let errorMessage = 'Invoice update failed:\n\n'
+            errorData.items.forEach((itemError: any, index: number) => {
+              if (itemError.sweet && itemError.sweet.length > 0) {
+                errorMessage += `Item ${index + 1}: ${itemError.sweet[0]}\n`
+              }
+            })
+            errorMessage += '\nPlease reselect the products/sweets for the affected items.'
+            throw new Error(errorMessage)
+          }
+        } catch (parseError) {
+          // If parsing fails, use the original error
+        }
+        
         throw new Error(errorText || 'Failed to update invoice')
       }
 
