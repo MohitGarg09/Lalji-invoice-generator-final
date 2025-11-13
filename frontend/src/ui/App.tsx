@@ -244,29 +244,79 @@ export default function InvoiceApp() {
           
           // If it's a product (not found in sweets), create a corresponding sweet
           if (!sweet && product) {
-            const res = await fetch(`${API_BASE}/sweets/`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                name: product.name,
-                sweet_type: product.product_type,
-                price_per_kg: product.price_per_kg,
-                price_per_unit: product.price_per_unit,
-              }),
-            });
+            // First check if a sweet with this name already exists
+            const existingSweetByName = workingSweets.find(
+              (s) => s.name.toLowerCase() === product.name.toLowerCase()
+            );
+            
+            if (existingSweetByName) {
+              // Use the existing sweet instead of creating a new one
+              it.sweetId = existingSweetByName.id;
+              it.mode = it.mode || existingSweetByName.sweet_type;
+            } else {
+              // Create new sweet from product
+              const res = await fetch(`${API_BASE}/sweets/`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  name: product.name,
+                  sweet_type: product.product_type,
+                  price_per_kg: product.price_per_kg,
+                  price_per_unit: product.price_per_unit,
+                }),
+              });
 
-            if (!res.ok) {
-              throw new Error(`Failed to create sweet from product: ${await res.text()}`);
+              if (!res.ok) {
+                const errorText = await res.text();
+                // If sweet already exists, refresh sweets and try to find it
+                if (errorText.includes("already exists")) {
+                  // Refresh sweets from backend to get the latest data
+                  try {
+                    const sweetsRes = await fetch(`${API_BASE}/sweets/`);
+                    if (sweetsRes.ok) {
+                      const latestSweets = await sweetsRes.json();
+                      setSweets(latestSweets);
+                      // Update working sweets with latest data
+                      const allSweets = [...workingSweets, ...latestSweets.filter(
+                        (ls: Sweet) => !workingSweets.find(ws => ws.id === ls.id)
+                      )];
+                      
+                      const existingSweet = allSweets.find(
+                        (s) => s.name.toLowerCase() === product.name.toLowerCase()
+                      );
+                      if (existingSweet) {
+                        it.sweetId = existingSweet.id;
+                        it.mode = it.mode || existingSweet.sweet_type;
+                        // Add to working sweets if not already there
+                        if (!workingSweets.find(ws => ws.id === existingSweet.id)) {
+                          workingSweets.push(existingSweet);
+                        }
+                      } else {
+                        throw new Error(`Sweet "${product.name}" already exists but cannot be found even after refresh`);
+                      }
+                    } else {
+                      throw new Error(`Sweet "${product.name}" already exists but cannot refresh sweets data`);
+                    }
+                  } catch (refreshError) {
+                    throw new Error(`Sweet "${product.name}" already exists: ${refreshError}`);
+                  }
+                } else {
+                  throw new Error(`Failed to create sweet from product: ${errorText}`);
+                }
+              } else {
+                const newSweet = await res.json();
+                if (newSweet) {
+                  workingSweets.push(newSweet);
+                  setSweets((prev) => [...prev, newSweet]);
+                  // Update the item to use the new sweet ID
+                  it.sweetId = newSweet.id;
+                  it.mode = it.mode || newSweet.sweet_type;
+                }
+              }
             }
-
-            const newSweet = await res.json();
-            if (newSweet) {
-              workingSweets.push(newSweet);
-              setSweets((prev) => [...prev, newSweet]);
-              // Update the item to use the new sweet ID
-              it.sweetId = newSweet.id;
-              it.mode = it.mode || newSweet.sweet_type;
-            }
+          } else if (!sweet && !product) {
+            // Neither sweet nor product found - this shouldn't happen but let's handle it
+            throw new Error(`Item with ID ${it.sweetId} not found in either sweets or products`);
           }
         }
         // Case 2: Item has sweetName but no sweetId - create new sweet
@@ -475,29 +525,79 @@ export default function InvoiceApp() {
             
             // If it's a product (not found in sweets), create a corresponding sweet
             if (!sweet && product) {
-              const res = await fetch(`${API_BASE}/sweets/`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  name: product.name,
-                  sweet_type: product.product_type,
-                  price_per_kg: product.price_per_kg,
-                  price_per_unit: product.price_per_unit,
-                }),
-              })
+              // First check if a sweet with this name already exists
+              const existingSweetByName = workingSweets.find(
+                (s) => s.name.toLowerCase() === product.name.toLowerCase()
+              );
+              
+              if (existingSweetByName) {
+                // Use the existing sweet instead of creating a new one
+                it.sweetId = existingSweetByName.id;
+                it.mode = it.mode || existingSweetByName.sweet_type;
+              } else {
+                // Create new sweet from product
+                const res = await fetch(`${API_BASE}/sweets/`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    name: product.name,
+                    sweet_type: product.product_type,
+                    price_per_kg: product.price_per_kg,
+                    price_per_unit: product.price_per_unit,
+                  }),
+                })
 
-              if (!res.ok) {
-                throw new Error(`Failed to create sweet from product: ${await res.text()}`)
+                if (!res.ok) {
+                  const errorText = await res.text();
+                  // If sweet already exists, refresh sweets and try to find it
+                  if (errorText.includes("already exists")) {
+                    // Refresh sweets from backend to get the latest data
+                    try {
+                      const sweetsRes = await fetch(`${API_BASE}/sweets/`);
+                      if (sweetsRes.ok) {
+                        const latestSweets = await sweetsRes.json();
+                        setSweets(latestSweets);
+                        // Update working sweets with latest data
+                        const allSweets = [...workingSweets, ...latestSweets.filter(
+                          (ls: Sweet) => !workingSweets.find(ws => ws.id === ls.id)
+                        )];
+                        
+                        const existingSweet = allSweets.find(
+                          (s) => s.name.toLowerCase() === product.name.toLowerCase()
+                        );
+                        if (existingSweet) {
+                          it.sweetId = existingSweet.id;
+                          it.mode = it.mode || existingSweet.sweet_type;
+                          // Add to working sweets if not already there
+                          if (!workingSweets.find(ws => ws.id === existingSweet.id)) {
+                            workingSweets.push(existingSweet);
+                          }
+                        } else {
+                          throw new Error(`Sweet "${product.name}" already exists but cannot be found even after refresh`);
+                        }
+                      } else {
+                        throw new Error(`Sweet "${product.name}" already exists but cannot refresh sweets data`);
+                      }
+                    } catch (refreshError) {
+                      throw new Error(`Sweet "${product.name}" already exists: ${refreshError}`);
+                    }
+                  } else {
+                    throw new Error(`Failed to create sweet from product: ${errorText}`);
+                  }
+                } else {
+                  const newSweet = await res.json()
+                  if (newSweet) {
+                    workingSweets.push(newSweet)
+                    setSweets((prev) => [...prev, newSweet])
+                    // Update the item to use the new sweet ID
+                    it.sweetId = newSweet.id
+                    it.mode = it.mode || newSweet.sweet_type
+                  }
+                }
               }
-
-              const newSweet = await res.json()
-              if (newSweet) {
-                workingSweets.push(newSweet)
-                setSweets((prev) => [...prev, newSweet])
-                // Update the item to use the new sweet ID
-                it.sweetId = newSweet.id
-                it.mode = it.mode || newSweet.sweet_type
-              }
+            } else if (!sweet && !product) {
+              // Neither sweet nor product found - this shouldn't happen but let's handle it
+              throw new Error(`Item with ID ${it.sweetId} not found in either sweets or products`);
             }
           }
           // Handle manually typed sweet names
