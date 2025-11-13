@@ -308,7 +308,12 @@ export default function InvoiceApp() {
         items: updatedItems
           .filter((it) => it.sweetId)
           .map((it) => {
-            const sweet = workingSweets.find((s) => s.id === it.sweetId)!;
+            const sweet = workingSweets.find((s) => s.id === it.sweetId);
+            
+            if (!sweet) {
+              throw new Error(`Sweet with ID ${it.sweetId} not found`);
+            }
+            
             const mode = it.mode || sweet.sweet_type;
             if (mode === "weight") {
               return {
@@ -526,13 +531,13 @@ export default function InvoiceApp() {
           items: updatedItems
             .filter((it) => it.sweetId)
             .map((it) => {
-              const sweet = workingSweets.find((s) => s.id === it.sweetId)
+              const sweet = workingSweets.find((s) => s.id === it.sweetId);
               
               if (!sweet) {
-                throw new Error(`Sweet with ID ${it.sweetId} not found`)
+                throw new Error(`Sweet with ID ${it.sweetId} not found`);
               }
               
-              const mode = it.mode || sweet.sweet_type
+              const mode = it.mode || sweet.sweet_type;
               if (mode === "weight") {
                 return {
                   sweet: sweet.id,
@@ -541,7 +546,7 @@ export default function InvoiceApp() {
                   unit_price_override: it.unit_price_override
                     ? parseFloat(it.unit_price_override)
                     : undefined,
-                }
+                };
               }
               return {
                 sweet: sweet.id,
@@ -549,7 +554,7 @@ export default function InvoiceApp() {
                 unit_price_override: it.unit_price_override
                   ? parseFloat(it.unit_price_override)
                   : undefined,
-              }
+              };
             }),
         }
 

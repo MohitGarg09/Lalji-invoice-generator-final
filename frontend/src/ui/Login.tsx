@@ -83,12 +83,12 @@ export default function Login({ onLoginSuccess }: LoginProps) {
         if (isLocalhost && isProduction) {
           setError('Configuration error: API URL not set. Please configure VITE_API_BASE environment variable.')
         } else {
-          setError(`Cannot connect to server at ${API_BASE}. Please check your internet connection and server status.`)
+          setError(`Cannot connect to server. Please check your internet connection and try again.`)
         }
       } else if (error.message?.includes('CORS')) {
-        setError('CORS error: Server configuration issue. Please contact administrator.')
+        setError('Server configuration issue. Please contact administrator.')
       } else {
-        setError(`Failed to verify password: ${error.message || 'Unknown error'}. Please try again.`)
+        setError(`Login failed. Please check your password and try again.`)
       }
     } finally {
       setLoading(false)
