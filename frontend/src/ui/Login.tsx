@@ -272,7 +272,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
           }}
         >
           {/* Logo section */}
-          <div className="logo-container" style={{ textAlign: 'center', marginBottom: '40px' }}>
+          <div className="logo-container" style={{ textAlign: 'center', marginBottom: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <LaljiLogo size="medium" />
             <p style={{ 
               margin: '20px 0 0 0', 
