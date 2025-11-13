@@ -787,10 +787,22 @@ export default function InvoiceApp() {
   return (
     <>
       <style>{`
+        * {
+          scroll-behavior: smooth;
+        }
+        
+        html {
+          scroll-behavior: smooth;
+        }
+        
+        body {
+          scroll-behavior: smooth;
+        }
+        
         @keyframes fadeInUp {
           from {
             opacity: 0;
-            transform: translateY(20px);
+            transform: translateY(10px);
           }
           to {
             opacity: 1;
@@ -801,7 +813,7 @@ export default function InvoiceApp() {
         @keyframes slideInRight {
           from {
             opacity: 0;
-            transform: translateX(30px);
+            transform: translateX(15px);
           }
           to {
             opacity: 1;
@@ -814,7 +826,7 @@ export default function InvoiceApp() {
             transform: scale(1);
           }
           50% {
-            transform: scale(1.03);
+            transform: scale(1.02);
           }
         }
         
@@ -832,7 +844,7 @@ export default function InvoiceApp() {
             transform: translateY(0px);
           }
           50% {
-            transform: translateY(-6px);
+            transform: translateY(-3px);
           }
         }
         
@@ -895,7 +907,7 @@ export default function InvoiceApp() {
         className="lalji-pattern"
         style={{
           minHeight: '100vh',
-          background: 'linear-gradient(135deg, #fef5f5 0%, #fef2f2 25%, #f0fff4 50%, #fffbeb 75%, #fef5f5 100%)',
+          background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
           padding: '20px',
           fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif',
         }}
@@ -908,16 +920,16 @@ export default function InvoiceApp() {
           background: 'rgba(255, 255, 255, 0.95)',
           backdropFilter: 'blur(20px)',
           borderRadius: '24px',
-          boxShadow: '0 25px 80px rgba(197, 48, 48, 0.15), 0 0 0 1px rgba(255,255,255,0.2)',
+          boxShadow: '0 25px 80px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0,0,0,0.05)',
           overflow: 'hidden',
-          border: '1px solid rgba(197, 48, 48, 0.1)',
-          animation: 'fadeInUp 0.5s ease-out',
+          border: '1px solid rgba(0, 0, 0, 0.06)',
+          animation: 'fadeInUp 0.3s ease-out',
         }}
       >
         {/* Header */}
         <div
           style={{
-            background: 'linear-gradient(135deg, #C53030 0%, #E53E3E 25%, #38A169 50%, #D69E2E 75%, #C53030 100%)',
+            background: 'linear-gradient(135deg, #1f2937 0%, #374151 100%)',
             padding: '40px 50px',
             color: 'white',
             display: 'flex',
@@ -954,7 +966,7 @@ export default function InvoiceApp() {
           />
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '25px', zIndex: 1 }}>
-            <LaljiLogo size="small" showText={false} animated={true} />
+            <LaljiLogo size="small" />
             <div>
               <h1 style={{ 
                 margin: 0, 
