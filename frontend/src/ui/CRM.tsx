@@ -133,6 +133,13 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
     loadProducts()
   }, [])
 
+  // Refresh products when products modal is opened (to get latest data)
+  useEffect(() => {
+    if (showProductsModal) {
+      loadProducts()
+    }
+  }, [showProductsModal])
+
   // Verify admin password
   const handleAdminLogin = async () => {
     try {
@@ -464,6 +471,8 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
       console.log('Invoice items:', invoice.items)
       console.log('Available sweets:', sweets.map(s => ({ id: s.id, name: s.name })))
       console.log('Available products:', products.map(p => ({ id: p.id, name: p.name })))
+      console.log('Products array length:', products.length)
+      console.log('Sweets array length:', sweets.length)
       
       for (let i = 0; i < invoice.items.length; i++) {
         const item = invoice.items[i]
@@ -1172,7 +1181,27 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
               }}
               onClick={(e) => e.stopPropagation()}
             >
-              <h2 style={{ margin: '0 0 24px 0', fontSize: '20px', fontWeight: 600 }}>Edit Invoice #{editingInvoice.id}</h2>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 600 }}>Edit Invoice #{editingInvoice.id}</h2>
+                <button
+                  onClick={() => {
+                    loadProducts()
+                    alert('Products refreshed! Latest products are now available in dropdowns.')
+                  }}
+                  style={{
+                    padding: '8px 16px',
+                    fontSize: '14px',
+                    backgroundColor: '#10b981',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontWeight: 500,
+                  }}
+                >
+                  🔄 Refresh Products
+                </button>
+              </div>
               
               <div style={{ marginBottom: '16px' }}>
                 <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#374151', marginBottom: '6px' }}>
@@ -1843,6 +1872,8 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
                   onClick={() => {
                     setShowProductsModal(false)
                     resetProductForm()
+                    // Refresh products to ensure latest data is available for invoice editing
+                    loadProducts()
                   }}
                   style={{
                     padding: '12px 24px',
