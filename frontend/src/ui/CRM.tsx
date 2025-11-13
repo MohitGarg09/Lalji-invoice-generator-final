@@ -276,11 +276,19 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
 
   // Delete product
   const deleteProduct = async (productId: number) => {
-    if (!confirm('Are you sure you want to delete this product?')) return
+    // Verify product exists before deleting
+    const existingProduct = products.find(p => p.id === productId)
+    if (!existingProduct) {
+      alert('Product not found. Please refresh the page and try again.')
+      loadProducts() // Refresh product list
+      return
+    }
+    
+    if (!confirm(`Are you sure you want to delete "${existingProduct.name}"?`)) return
     
     try {
       const url = `${API_BASE}/products/${productId}/`
-      console.log('Deleting product:', { url, productId })
+      console.log('Deleting product:', { url, productId, productName: existingProduct.name })
       
       const response = await fetch(url, {
         method: 'DELETE'
@@ -294,7 +302,13 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
       } else {
         const error = await response.text()
         console.error('Delete error response:', error)
-        alert(`Error deleting product: ${error}`)
+        
+        if (error.includes('No ProductMaster matches the given query')) {
+          alert('Product was already deleted or not found. Refreshing the list...')
+          loadProducts()
+        } else {
+          alert(`Error deleting product: ${error}`)
+        }
       }
     } catch (error) {
       console.error('Error deleting product:', error)
@@ -316,13 +330,21 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
 
   // Edit product
   const editProduct = (product: any) => {
-    setEditingProduct(product)
+    // Verify product exists before editing
+    const existingProduct = products.find(p => p.id === product.id)
+    if (!existingProduct) {
+      alert('Product not found. Please refresh the page and try again.')
+      loadProducts() // Refresh product list
+      return
+    }
+    
+    setEditingProduct(existingProduct)
     setProductForm({
-      name: product.name,
-      product_type: product.product_type,
-      price_per_kg: product.price_per_kg || '',
-      price_per_unit: product.price_per_unit || '',
-      is_active: product.is_active
+      name: existingProduct.name,
+      product_type: existingProduct.product_type,
+      price_per_kg: existingProduct.price_per_kg || '',
+      price_per_unit: existingProduct.price_per_unit || '',
+      is_active: existingProduct.is_active
     })
   }
 
@@ -1509,9 +1531,32 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
                 boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
               }}
             >
-              <h2 style={{ margin: '0 0 24px 0', fontSize: '24px', fontWeight: 700, color: '#111827' }}>
-                Manage Products
-              </h2>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 700, color: '#111827' }}>
+                  Manage Products
+                </h2>
+                <button
+                  onClick={loadProducts}
+                  style={{
+                    padding: '8px 16px',
+                    fontSize: '14px',
+                    backgroundColor: '#667eea',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontWeight: 500,
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#5a67d8'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#667eea'
+                  }}
+                >
+                  🔄 Refresh Products
+                </button>
+              </div>
               
               {/* Product Form */}
               <div style={{ marginBottom: '32px', padding: '24px', backgroundColor: '#f9fafb', borderRadius: '8px' }}>
