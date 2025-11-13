@@ -1,6 +1,6 @@
 
 type LaljiLogoProps = {
-  size?: 'small' | 'medium' | 'large'
+  size?: 'small' | 'medium' | 'large' | 'xlarge'
   className?: string
 }
 
@@ -8,7 +8,8 @@ export default function LaljiLogo({ size = 'medium', className = '' }: LaljiLogo
   const sizes = {
     small: { width: 160, height: 80 },
     medium: { width: 250, height: 125 },
-    large: { width: 320, height: 160 }
+    large: { width: 320, height: 160 },
+    xlarge: { width: 800, height: 400 }
   }
   
   const currentSize = sizes[size]
@@ -33,7 +34,7 @@ export default function LaljiLogo({ size = 'medium', className = '' }: LaljiLogo
           width: '100%',
           height: '100%',
           objectFit: 'contain',
-          filter: 'drop-shadow(0 6px 16px rgba(0,0,0,0.4))',
+          filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.3))',
         }}
       />
     </div>

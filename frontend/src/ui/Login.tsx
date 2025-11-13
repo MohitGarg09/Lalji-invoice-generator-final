@@ -264,8 +264,8 @@ export default function Login({ onLoginSuccess }: LoginProps) {
             backdropFilter: 'blur(20px)',
             borderRadius: '24px',
             boxShadow: '0 25px 80px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,255,255,0.2)',
-            padding: '60px 50px',
-            maxWidth: '450px',
+            padding: '80px 20px',
+            maxWidth: '900px',
             width: '100%',
             border: '1px solid rgba(255, 255, 255, 0.2)',
             position: 'relative',
@@ -273,9 +273,9 @@ export default function Login({ onLoginSuccess }: LoginProps) {
         >
           {/* Logo section */}
           <div className="logo-container" style={{ textAlign: 'center', marginBottom: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <LaljiLogo size="medium" />
+            <LaljiLogo size="xlarge" />
             <p style={{ 
-              margin: '20px 0 0 0', 
+              margin: '-200px 0 0 0', 
               color: '#666', 
               fontSize: '16px',
               fontWeight: 600,

@@ -966,7 +966,6 @@ export default function InvoiceApp() {
           />
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px', zIndex: 1, flex: 1 }}>
-            <LaljiLogo size="small" />
             <div>
               <h1 style={{ 
                 margin: 0, 
