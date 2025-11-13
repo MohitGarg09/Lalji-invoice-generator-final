@@ -474,6 +474,23 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
       console.log('Products array length:', products.length)
       console.log('Sweets array length:', sweets.length)
       
+      // Force refresh products and sweets before validation
+      console.log('Refreshing products and sweets before validation...')
+      await loadProducts()
+      
+      // Re-fetch sweets as well to ensure we have latest data
+      try {
+        const sweetsResponse = await fetch(`${API_BASE}/sweets/`)
+        if (sweetsResponse.ok) {
+          const sweetsData = await sweetsResponse.json()
+          const latestSweets = Array.isArray(sweetsData) ? sweetsData : sweetsData.results || []
+          setSweets(latestSweets)
+          console.log('Updated sweets:', latestSweets.map((s: Sweet) => ({ id: s.id, name: s.name })))
+        }
+      } catch (error) {
+        console.error('Error refreshing sweets:', error)
+      }
+      
       for (let i = 0; i < invoice.items.length; i++) {
         const item = invoice.items[i]
         console.log(`Item ${i + 1}:`, { sweet: item.sweet, sweet_name: item.sweet_name })
@@ -485,11 +502,13 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
           continue
         }
         
-        // Check if the sweet still exists in our current data
+        // Check if the sweet still exists in our current data (use updated arrays)
         const sweetExists = sweets.some(s => s.id === item.sweet)
         const productExists = products.some(p => p.id === item.sweet)
         
         console.log(`Item ${i + 1}: sweet exists=${sweetExists}, product exists=${productExists}`)
+        console.log(`Item ${i + 1}: Looking for ID ${item.sweet} in sweets:`, sweets.map(s => s.id))
+        console.log(`Item ${i + 1}: Looking for ID ${item.sweet} in products:`, products.map(p => p.id))
         
         if (!sweetExists && !productExists) {
           console.log(`Item ${i + 1}: Sweet/Product ID ${item.sweet} not found!`)
