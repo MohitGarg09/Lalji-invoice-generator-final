@@ -244,12 +244,29 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
     }
     
     try {
-      const url = editingProduct 
-        ? `${API_BASE}/products/${editingProduct.id}/`
-        : `${API_BASE}/products/`
-      const method = editingProduct ? 'PUT' : 'POST'
+      let url, method
       
-      console.log('Saving product:', { url, method, productForm })
+      if (editingProduct) {
+        // For editing, verify the product still exists before updating
+        const verifyResponse = await fetch(`${API_BASE}/products/${editingProduct.id}/`)
+        if (!verifyResponse.ok) {
+          if (verifyResponse.status === 404) {
+            alert('Product no longer exists. It may have been deleted by another user.')
+            loadProducts()
+            resetProductForm()
+            return
+          }
+          throw new Error(`Failed to verify product: ${verifyResponse.statusText}`)
+        }
+        
+        url = `${API_BASE}/products/${editingProduct.id}/`
+        method = 'PUT'
+      } else {
+        url = `${API_BASE}/products/`
+        method = 'POST'
+      }
+      
+      console.log('Saving product:', { url, method, productForm, editingProduct: editingProduct?.id })
       
       const response = await fetch(url, {
         method,
@@ -266,7 +283,14 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
       } else {
         const error = await response.text()
         console.error('Error response:', error)
-        alert(`Error: ${error || 'Failed to save product'}`)
+        
+        if (error.includes('No ProductMaster matches the given query')) {
+          alert('Product not found. It may have been deleted. Refreshing the product list...')
+          loadProducts()
+          resetProductForm()
+        } else {
+          alert(`Error: ${error || 'Failed to save product'}`)
+        }
       }
     } catch (error) {
       console.error('Error saving product:', error)
@@ -329,23 +353,36 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
   }
 
   // Edit product
-  const editProduct = (product: any) => {
-    // Verify product exists before editing
-    const existingProduct = products.find(p => p.id === product.id)
-    if (!existingProduct) {
-      alert('Product not found. Please refresh the page and try again.')
-      loadProducts() // Refresh product list
-      return
+  const editProduct = async (product: any) => {
+    try {
+      // First, fetch the latest product data from backend
+      const response = await fetch(`${API_BASE}/products/${product.id}/`)
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          alert('Product not found. It may have been deleted. Refreshing the product list...')
+          loadProducts()
+          return
+        }
+        throw new Error(`Failed to fetch product: ${response.statusText}`)
+      }
+      
+      const latestProduct = await response.json()
+      console.log('Fetched latest product data:', latestProduct)
+      
+      setEditingProduct(latestProduct)
+      setProductForm({
+        name: latestProduct.name,
+        product_type: latestProduct.product_type,
+        price_per_kg: latestProduct.price_per_kg || '',
+        price_per_unit: latestProduct.price_per_unit || '',
+        is_active: latestProduct.is_active
+      })
+    } catch (error) {
+      console.error('Error editing product:', error)
+      alert('Error loading product data. Please try refreshing the product list.')
+      loadProducts()
     }
-    
-    setEditingProduct(existingProduct)
-    setProductForm({
-      name: existingProduct.name,
-      product_type: existingProduct.product_type,
-      price_per_kg: existingProduct.price_per_kg || '',
-      price_per_unit: existingProduct.price_per_unit || '',
-      is_active: existingProduct.is_active
-    })
   }
 
   // Download PDF
