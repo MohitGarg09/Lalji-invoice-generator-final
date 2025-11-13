@@ -215,36 +215,17 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
   // Load products from backend
   const loadProducts = async () => {
     try {
-      const url = `${API_BASE}/products/?show_inactive=true`
-      console.log('=== LOAD PRODUCTS DEBUG ===')
-      console.log('API_BASE:', API_BASE)
-      console.log('Full URL:', url)
-      
+      const url = `${API_BASE}/products/`
       const response = await fetch(url)
-      console.log('Load products response status:', response.status)
-      console.log('Response headers:', Object.fromEntries(response.headers.entries()))
       
       if (!response.ok) {
-        const errorText = await response.text()
-        console.error('Error response body:', errorText)
-        throw new Error(`Failed to load products: ${response.status} ${response.statusText} - ${errorText}`)
+        throw new Error(`Failed to load products: ${response.statusText}`)
       }
       
       const data = await response.json()
-      console.log('Products data:', data)
-      console.log('Products array length:', Array.isArray(data) ? data.length : (data.results?.length || 0))
-      
       setProducts(Array.isArray(data) ? data : data.results || [])
     } catch (error) {
-      console.error('=== LOAD PRODUCTS ERROR ===')
       console.error('Error loading products:', error)
-      console.error('Error type:', typeof error)
-      if (error instanceof Error) {
-        console.error('Error message:', error.message)
-        console.error('Stack trace:', error.stack)
-      } else {
-        console.error('Unknown error:', String(error))
-      }
     }
   }
 
@@ -265,19 +246,6 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
       let url, method
       
       if (editingProduct) {
-        // For editing, verify the product still exists before updating
-        // Include show_inactive=true to access inactive products
-        const verifyResponse = await fetch(`${API_BASE}/products/${editingProduct.id}/?show_inactive=true`)
-        if (!verifyResponse.ok) {
-          if (verifyResponse.status === 404) {
-            alert('Product no longer exists. It may have been deleted by another user.')
-            loadProducts()
-            resetProductForm()
-            return
-          }
-          throw new Error(`Failed to verify product: ${verifyResponse.statusText}`)
-        }
-        
         url = `${API_BASE}/products/${editingProduct.id}/`
         method = 'PUT'
       } else {
@@ -330,9 +298,8 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
     if (!confirm(`Are you sure you want to delete "${existingProduct.name}"?`)) return
     
     try {
-      const url = `${API_BASE}/products/${productId}/?show_inactive=true`
-      console.log('Deleting product:', { url, productId, productName: existingProduct.name, is_active: existingProduct.is_active })
-      console.log('Note: Including show_inactive=true to access inactive products')
+      const url = `${API_BASE}/products/${productId}/`
+      console.log('Deleting product:', { url, productId, productName: existingProduct.name })
       
       const response = await fetch(url, {
         method: 'DELETE'
@@ -373,62 +340,15 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
   }
 
   // Edit product
-  const editProduct = async (product: any) => {
-    try {
-      const url = `${API_BASE}/products/${product.id}/?show_inactive=true`
-      console.log('=== EDIT PRODUCT DEBUG ===')
-      console.log('Product ID:', product.id)
-      console.log('API_BASE:', API_BASE)
-      console.log('Full URL:', url)
-      console.log('Product object:', product)
-      console.log('Product is_active:', product.is_active)
-      
-      // First, fetch the latest product data from backend
-      // Include show_inactive=true to access inactive products
-      const response = await fetch(url)
-      
-      console.log('Response status:', response.status)
-      console.log('Response headers:', Object.fromEntries(response.headers.entries()))
-      
-      if (!response.ok) {
-        const errorText = await response.text()
-        console.error('Error response body:', errorText)
-        
-        if (response.status === 404) {
-          alert(`Product ${product.id} not found. It may have been deleted. Refreshing the product list...\n\nURL: ${url}`)
-          loadProducts()
-          return
-        }
-        throw new Error(`Failed to fetch product: ${response.status} ${response.statusText} - ${errorText}`)
-      }
-      
-      const latestProduct = await response.json()
-      console.log('Fetched latest product data:', latestProduct)
-      
-      setEditingProduct(latestProduct)
-      setProductForm({
-        name: latestProduct.name,
-        product_type: latestProduct.product_type,
-        price_per_kg: latestProduct.price_per_kg || '',
-        price_per_unit: latestProduct.price_per_unit || '',
-        is_active: latestProduct.is_active
-      })
-    } catch (error) {
-      console.error('=== EDIT PRODUCT ERROR ===')
-      console.error('Error editing product:', error)
-      console.error('Error type:', typeof error)
-      let errorMessage = 'Unknown error occurred'
-      if (error instanceof Error) {
-        console.error('Error message:', error.message)
-        console.error('Stack trace:', error.stack)
-        errorMessage = error.message
-      } else {
-        console.error('Unknown error:', String(error))
-        errorMessage = String(error)
-      }
-      alert(`Error loading product data: ${errorMessage}\n\nPlease check the browser console for more details.`)
-      loadProducts()
-    }
+  const editProduct = (product: any) => {
+    setEditingProduct(product)
+    setProductForm({
+      name: product.name,
+      product_type: product.product_type,
+      price_per_kg: product.price_per_kg || '',
+      price_per_unit: product.price_per_unit || '',
+      is_active: true
+    })
   }
 
   // Download PDF
@@ -1690,7 +1610,7 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
                   </div>
                 </div>
                 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#374151', marginBottom: '6px' }}>
                       Price per KG
@@ -1731,27 +1651,6 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
                       }}
                       placeholder="0.00"
                     />
-                  </div>
-                  
-                  <div>
-                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#374151', marginBottom: '6px' }}>
-                      Status
-                    </label>
-                    <select
-                      value={productForm.is_active ? 'active' : 'inactive'}
-                      onChange={(e) => setProductForm({...productForm, is_active: e.target.value === 'active'})}
-                      style={{
-                        width: '100%',
-                        padding: '10px 12px',
-                        fontSize: '14px',
-                        border: '1px solid #d1d5db',
-                        borderRadius: '6px',
-                        outline: 'none',
-                      }}
-                    >
-                      <option value="active">Active</option>
-                      <option value="inactive">Inactive</option>
-                    </select>
                   </div>
                 </div>
                 
@@ -1809,7 +1708,6 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
                           <th style={{ padding: '12px', textAlign: 'left', fontWeight: 600 }}>Type</th>
                           <th style={{ padding: '12px', textAlign: 'right', fontWeight: 600 }}>Price/KG</th>
                           <th style={{ padding: '12px', textAlign: 'right', fontWeight: 600 }}>Price/Unit</th>
-                          <th style={{ padding: '12px', textAlign: 'center', fontWeight: 600 }}>Status</th>
                           <th style={{ padding: '12px', textAlign: 'center', fontWeight: 600 }}>Actions</th>
                         </tr>
                       </thead>
@@ -1820,18 +1718,6 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
                             <td style={{ padding: '12px' }}>{product.product_type === 'weight' ? 'By Weight' : 'By Count'}</td>
                             <td style={{ padding: '12px', textAlign: 'right' }}>₹{product.price_per_kg || '-'}</td>
                             <td style={{ padding: '12px', textAlign: 'right' }}>₹{product.price_per_unit || '-'}</td>
-                            <td style={{ padding: '12px', textAlign: 'center' }}>
-                              <span style={{ 
-                                padding: '4px 8px', 
-                                borderRadius: '4px', 
-                                fontSize: '12px', 
-                                fontWeight: 600,
-                                backgroundColor: product.is_active ? '#dcfce7' : '#fee2e2',
-                                color: product.is_active ? '#166534' : '#dc2626'
-                              }}>
-                                {product.is_active ? 'Active' : 'Inactive'}
-                              </span>
-                            </td>
                             <td style={{ padding: '12px', textAlign: 'center' }}>
                               <button
                                 onClick={() => editProduct(product)}
