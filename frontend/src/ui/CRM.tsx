@@ -216,17 +216,31 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
   const loadProducts = async () => {
     try {
       const url = `${API_BASE}/products/?show_inactive=true`
-      console.log('Loading products from:', url)
+      console.log('=== LOAD PRODUCTS DEBUG ===')
+      console.log('API_BASE:', API_BASE)
+      console.log('Full URL:', url)
       
       const response = await fetch(url)
       console.log('Load products response status:', response.status)
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()))
+      
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('Error response body:', errorText)
+        throw new Error(`Failed to load products: ${response.status} ${response.statusText} - ${errorText}`)
+      }
       
       const data = await response.json()
       console.log('Products data:', data)
+      console.log('Products array length:', Array.isArray(data) ? data.length : (data.results?.length || 0))
       
       setProducts(Array.isArray(data) ? data : data.results || [])
     } catch (error) {
+      console.error('=== LOAD PRODUCTS ERROR ===')
       console.error('Error loading products:', error)
+      console.error('Error type:', typeof error)
+      console.error('Error message:', error.message)
+      console.error('Stack trace:', error.stack)
     }
   }
 
@@ -355,16 +369,29 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
   // Edit product
   const editProduct = async (product: any) => {
     try {
+      const url = `${API_BASE}/products/${product.id}/`
+      console.log('=== EDIT PRODUCT DEBUG ===')
+      console.log('Product ID:', product.id)
+      console.log('API_BASE:', API_BASE)
+      console.log('Full URL:', url)
+      console.log('Product object:', product)
+      
       // First, fetch the latest product data from backend
-      const response = await fetch(`${API_BASE}/products/${product.id}/`)
+      const response = await fetch(url)
+      
+      console.log('Response status:', response.status)
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()))
       
       if (!response.ok) {
+        const errorText = await response.text()
+        console.error('Error response body:', errorText)
+        
         if (response.status === 404) {
-          alert('Product not found. It may have been deleted. Refreshing the product list...')
+          alert(`Product ${product.id} not found. It may have been deleted. Refreshing the product list...\n\nURL: ${url}`)
           loadProducts()
           return
         }
-        throw new Error(`Failed to fetch product: ${response.statusText}`)
+        throw new Error(`Failed to fetch product: ${response.status} ${response.statusText} - ${errorText}`)
       }
       
       const latestProduct = await response.json()
@@ -379,8 +406,12 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
         is_active: latestProduct.is_active
       })
     } catch (error) {
+      console.error('=== EDIT PRODUCT ERROR ===')
       console.error('Error editing product:', error)
-      alert('Error loading product data. Please try refreshing the product list.')
+      console.error('Error type:', typeof error)
+      console.error('Error message:', error.message)
+      console.error('Stack trace:', error.stack)
+      alert(`Error loading product data: ${error.message}\n\nPlease check the browser console for more details.`)
       loadProducts()
     }
   }
