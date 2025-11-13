@@ -771,10 +771,10 @@ export default function InvoiceApp() {
           background: 'rgba(255, 255, 255, 0.95)',
           backdropFilter: 'blur(20px)',
           borderRadius: '24px',
-          boxShadow: '0 25px 80px rgba(255, 107, 53, 0.15), 0 0 0 1px rgba(255,255,255,0.2)',
+          boxShadow: '0 25px 80px rgba(197, 48, 48, 0.15), 0 0 0 1px rgba(255,255,255,0.2)',
           overflow: 'hidden',
-          border: '1px solid rgba(255, 165, 0, 0.1)',
-          animation: 'fadeInUp 0.8s ease-out',
+          border: '1px solid rgba(197, 48, 48, 0.1)',
+          animation: 'fadeInUp 0.5s ease-out',
         }}
       >
         {/* Header */}
@@ -869,7 +869,7 @@ export default function InvoiceApp() {
             background: 'rgba(255, 248, 240, 0.6)',
             padding: '30px',
             borderRadius: '20px',
-            border: '1px solid rgba(255, 165, 0, 0.2)',
+            border: '1px solid rgba(197, 48, 48, 0.2)',
             animation: 'fadeInUp 0.6s ease-out 0.2s both',
           }}>
             <label
@@ -877,7 +877,7 @@ export default function InvoiceApp() {
                 display: 'block',
                 fontSize: '16px',
                 fontWeight: 700,
-                color: '#ff6b35',
+                color: '#C53030',
                 marginBottom: '12px',
                 letterSpacing: '0.5px',
                 textTransform: 'uppercase',
@@ -908,7 +908,7 @@ export default function InvoiceApp() {
                 width: '100%',
                 padding: '16px 20px',
                 fontSize: '16px',
-                border: '2px solid rgba(255, 165, 0, 0.3)',
+                border: '2px solid rgba(197, 48, 48, 0.3)',
                 borderRadius: '12px',
                 outline: 'none',
                 fontFamily: 'inherit',
