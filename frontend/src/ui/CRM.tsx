@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import SweetDropdown from './SweetDropdown'
 
 type InvoiceItem = {
   id: number
@@ -1243,27 +1244,23 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
                         return (
                           <tr key={idx} style={{ borderTop: '1px solid #f3f4f6' }}>
                             <td style={{ padding: '8px 10px' }}>
-                              <input
-                                list={`edit-sweets-${idx}`}
-                                placeholder="Type sweet"
+                              <SweetDropdown
                                 value={it.sweet_name || selectedSweet?.name || ''}
-                                onChange={(e) => {
-                                  const name = e.target.value
-                                  const found = sweets.find((s) => s.name.toLowerCase() === name.toLowerCase())
-                                  if (found) {
-                                    updateItem({ sweet: found.id, sweet_name: found.name, item_type: it.item_type || found.sweet_type })
+                                onChange={(selectedItem) => {
+                                  if (selectedItem) {
+                                    updateItem({ 
+                                      sweet: selectedItem.id, 
+                                      sweet_name: selectedItem.name, 
+                                      item_type: it.item_type || selectedItem.type 
+                                    })
                                   } else {
-                                    // Clear sweet id if not matched to force explicit selection
-                                    updateItem({ sweet: undefined, sweet_name: name })
+                                    updateItem({ sweet: undefined, sweet_name: '' })
                                   }
                                 }}
+                                placeholder="Select sweet or product"
                                 style={inputStyle}
+                                includeProducts={true}
                               />
-                              <datalist id={`edit-sweets-${idx}`}>
-                                {sweets.map((s) => (
-                                  <option key={s.id} value={s.name} />
-                                ))}
-                              </datalist>
                             </td>
                             <td style={{ padding: '8px 10px' }}>
                               <div style={{ display: 'flex', gap: '10px' }}>
