@@ -128,6 +128,11 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
       .catch(() => {})
   }, [])
 
+  // Load products once for dropdown selections
+  useEffect(() => {
+    loadProducts()
+  }, [])
+
   // Verify admin password
   const handleAdminLogin = async () => {
     try {
