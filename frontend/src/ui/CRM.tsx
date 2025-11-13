@@ -1245,21 +1245,22 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
                           <tr key={idx} style={{ borderTop: '1px solid #f3f4f6' }}>
                             <td style={{ padding: '8px 10px' }}>
                               <SweetDropdown
+                                sweets={sweets}
+                                products={products}
                                 value={it.sweet_name || selectedSweet?.name || ''}
-                                onChange={(selectedItem) => {
-                                  if (selectedItem) {
+                                onChange={(value, item) => {
+                                  if (item) {
                                     updateItem({ 
-                                      sweet: selectedItem.id, 
-                                      sweet_name: selectedItem.name, 
-                                      item_type: it.item_type || selectedItem.type 
+                                      sweet: item.id, 
+                                      sweet_name: item.name, 
+                                      item_type: it.item_type || ('sweet_type' in item ? item.sweet_type : item.product_type)
                                     })
                                   } else {
-                                    updateItem({ sweet: undefined, sweet_name: '' })
+                                    updateItem({ sweet: undefined, sweet_name: value })
                                   }
                                 }}
                                 placeholder="Select sweet or product"
                                 style={inputStyle}
-                                includeProducts={true}
                               />
                             </td>
                             <td style={{ padding: '8px 10px' }}>
