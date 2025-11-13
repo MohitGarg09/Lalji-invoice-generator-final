@@ -1,4 +1,3 @@
-import React from 'react'
 
 type LaljiLogoProps = {
   size?: 'small' | 'medium' | 'large'
