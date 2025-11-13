@@ -460,11 +460,18 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
       // Enhanced validation: check each item thoroughly
       const invalidItems: number[] = []
       
+      console.log('=== INVOICE UPDATE VALIDATION ===')
+      console.log('Invoice items:', invoice.items)
+      console.log('Available sweets:', sweets.map(s => ({ id: s.id, name: s.name })))
+      console.log('Available products:', products.map(p => ({ id: p.id, name: p.name })))
+      
       for (let i = 0; i < invoice.items.length; i++) {
         const item = invoice.items[i]
+        console.log(`Item ${i + 1}:`, { sweet: item.sweet, sweet_name: item.sweet_name })
         
         // Check if item has a sweet selected
         if (!item.sweet || typeof item.sweet !== 'number' || item.sweet <= 0) {
+          console.log(`Item ${i + 1}: No valid sweet ID`)
           invalidItems.push(i + 1)
           continue
         }
@@ -473,13 +480,38 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
         const sweetExists = sweets.some(s => s.id === item.sweet)
         const productExists = products.some(p => p.id === item.sweet)
         
+        console.log(`Item ${i + 1}: sweet exists=${sweetExists}, product exists=${productExists}`)
+        
         if (!sweetExists && !productExists) {
+          console.log(`Item ${i + 1}: Sweet/Product ID ${item.sweet} not found!`)
           invalidItems.push(i + 1)
         }
       }
       
       if (invalidItems.length > 0) {
-        alert(`Please select valid sweets/products for items: ${invalidItems.join(', ')}.\n\nSome items may reference deleted products. Please reselect them from the dropdown.`)
+        const shouldClearInvalid = window.confirm(
+          `Items ${invalidItems.join(', ')} have invalid product references (deleted products).\n\n` +
+          `Click OK to automatically clear these items so you can reselect them.\n` +
+          `Click Cancel to manually fix them.`
+        )
+        
+        if (shouldClearInvalid) {
+          // Clear invalid items by setting sweet to undefined and sweet_name to empty
+          const updatedItems = invoice.items.map((item, index) => {
+            if (invalidItems.includes(index + 1)) {
+              return {
+                ...item,
+                sweet: undefined,
+                sweet_name: '',
+                unit_price_override: ''
+              }
+            }
+            return item
+          })
+          
+          setEditingInvoice({ ...invoice, items: updatedItems })
+          alert('Invalid items have been cleared. Please reselect products from the dropdown.')
+        }
         return
       }
 
