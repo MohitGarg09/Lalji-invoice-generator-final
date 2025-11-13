@@ -464,83 +464,95 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
   // Update invoice
   const handleUpdate = async (invoice: Invoice) => {
     try {
-      // Enhanced validation: directly verify each sweet ID with backend
-      const invalidItems: number[] = []
+      console.log('=== INVOICE UPDATE WITH PRODUCT-TO-SWEET CONVERSION ===')
       
-      console.log('=== INVOICE UPDATE VALIDATION ===')
-      console.log('Invoice items:', invoice.items)
-      
-      // Validate each item by checking directly with the backend
-      for (let i = 0; i < invoice.items.length; i++) {
-        const item = invoice.items[i]
-        console.log(`Item ${i + 1}:`, { sweet: item.sweet, sweet_name: item.sweet_name })
-        
-        // Check if item has a sweet selected
-        if (!item.sweet || typeof item.sweet !== 'number' || item.sweet <= 0) {
-          console.log(`Item ${i + 1}: No valid sweet ID`)
-          invalidItems.push(i + 1)
-          continue
-        }
-        
-        // Directly verify with backend - check both sweets and products endpoints
-        let sweetExists = false
-        let productExists = false
-        
-        try {
-          // Check if it exists as a sweet
-          const sweetResponse = await fetch(`${API_BASE}/sweets/${item.sweet}/`)
-          if (sweetResponse.ok) {
-            sweetExists = true
-            console.log(`Item ${i + 1}: Found as sweet ID ${item.sweet}`)
-          }
-        } catch (error) {
-          console.log(`Item ${i + 1}: Not found as sweet ID ${item.sweet}`)
-        }
-        
-        if (!sweetExists) {
-          try {
-            // Check if it exists as a product
-            const productResponse = await fetch(`${API_BASE}/products/${item.sweet}/`)
-            if (productResponse.ok) {
-              productExists = true
-              console.log(`Item ${i + 1}: Found as product ID ${item.sweet}`)
-            }
-          } catch (error) {
-            console.log(`Item ${i + 1}: Not found as product ID ${item.sweet}`)
-          }
-        }
-        
-        if (!sweetExists && !productExists) {
-          console.log(`Item ${i + 1}: Sweet/Product ID ${item.sweet} does not exist in backend!`)
-          invalidItems.push(i + 1)
-        }
+      // Basic validation: each item must have a valid sweet selected
+      if (!invoice.items.every((it) => typeof it.sweet === 'number' && it.sweet > 0)) {
+        alert('Please select a valid sweet for all items before saving.')
+        return
       }
-      
-      if (invalidItems.length > 0) {
-        const shouldClearInvalid = window.confirm(
-          `Items ${invalidItems.join(', ')} have invalid product references (deleted products).\n\n` +
-          `Click OK to automatically clear these items so you can reselect them.\n` +
-          `Click Cancel to manually fix them.`
-        )
+
+      // Use a local working list to include newly created sweets immediately
+      const workingSweets: Sweet[] = [...sweets];
+      const updatedItems = [...invoice.items];
+
+      // Step 1: Ensure all items have corresponding Sweet records (convert products to sweets if needed)
+      for (let i = 0; i < updatedItems.length; i++) {
+        const it = updatedItems[i];
         
-        if (shouldClearInvalid) {
-          // Clear invalid items by setting sweet to undefined and sweet_name to empty
-          const updatedItems = invoice.items.map((item, index) => {
-            if (invalidItems.includes(index + 1)) {
-              return {
-                ...item,
-                sweet: undefined,
-                sweet_name: '',
-                unit_price_override: ''
+        if (it.sweet) {
+          const sweet = workingSweets.find((s) => s.id === it.sweet);
+          const product = products.find((p) => p.id === it.sweet);
+          
+          // If it's a product (not found in sweets), create a corresponding sweet
+          if (!sweet && product) {
+            console.log(`Converting product ${product.name} (ID: ${product.id}) to sweet...`);
+            
+            // First check if a sweet with this name already exists
+            const existingSweetByName = workingSweets.find(
+              (s) => s.name.toLowerCase() === product.name.toLowerCase()
+            );
+            
+            if (existingSweetByName) {
+              // Use the existing sweet instead of creating a new one
+              console.log(`Using existing sweet: ${existingSweetByName.name} (ID: ${existingSweetByName.id})`);
+              it.sweet = existingSweetByName.id;
+            } else {
+              // Create new sweet from product
+              console.log(`Creating new sweet from product: ${product.name}`);
+              const res = await fetch(`${API_BASE}/sweets/`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  name: product.name,
+                  sweet_type: product.product_type,
+                  price_per_kg: product.price_per_kg,
+                  price_per_unit: product.price_per_unit,
+                }),
+              });
+
+              if (!res.ok) {
+                const errorText = await res.text();
+                console.error('Error creating sweet:', errorText);
+                
+                // If sweet already exists, refresh sweets and try to find it
+                if (errorText.includes("already exists")) {
+                  console.log('Sweet already exists, refreshing sweets list...');
+                  try {
+                    const sweetsRes = await fetch(`${API_BASE}/sweets/`);
+                    if (sweetsRes.ok) {
+                      const latestSweets = await sweetsRes.json();
+                      const sweetsArray = Array.isArray(latestSweets) ? latestSweets : latestSweets.results || [];
+                      setSweets(sweetsArray);
+                      
+                      const existingSweet = sweetsArray.find(
+                        (s: Sweet) => s.name.toLowerCase() === product.name.toLowerCase()
+                      );
+                      if (existingSweet) {
+                        console.log(`Found existing sweet: ${existingSweet.name} (ID: ${existingSweet.id})`);
+                        it.sweet = existingSweet.id;
+                        workingSweets.push(existingSweet);
+                      } else {
+                        throw new Error(`Could not find or create sweet for product: ${product.name}`);
+                      }
+                    }
+                  } catch (refreshError) {
+                    console.error('Error refreshing sweets:', refreshError);
+                    throw new Error(`Failed to create sweet for product: ${product.name}`);
+                  }
+                } else {
+                  throw new Error(`Failed to create sweet for product: ${product.name}. ${errorText}`);
+                }
+              } else {
+                const newSweet = await res.json();
+                console.log(`Created new sweet: ${newSweet.name} (ID: ${newSweet.id})`);
+                it.sweet = newSweet.id;
+                workingSweets.push(newSweet);
+                setSweets([...sweets, newSweet]);
               }
             }
-            return item
-          })
-          
-          setEditingInvoice({ ...invoice, items: updatedItems })
-          alert('Invalid items have been cleared. Please reselect products from the dropdown.')
+          }
         }
-        return
       }
 
       const payload = {
