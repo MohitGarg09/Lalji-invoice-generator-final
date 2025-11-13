@@ -215,8 +215,15 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
   // Load products from backend
   const loadProducts = async () => {
     try {
-      const response = await fetch(`${API_BASE}/products/?show_inactive=true`)
+      const url = `${API_BASE}/products/?show_inactive=true`
+      console.log('Loading products from:', url)
+      
+      const response = await fetch(url)
+      console.log('Load products response status:', response.status)
+      
       const data = await response.json()
+      console.log('Products data:', data)
+      
       setProducts(Array.isArray(data) ? data : data.results || [])
     } catch (error) {
       console.error('Error loading products:', error)
@@ -225,11 +232,24 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
 
   // Save product (create or update)
   const saveProduct = async () => {
+    // Basic validation
+    if (!productForm.name.trim()) {
+      alert('Product name is required')
+      return
+    }
+    
+    if (!productForm.price_per_kg.trim() && !productForm.price_per_unit.trim()) {
+      alert('At least one price (per kg or per unit) is required')
+      return
+    }
+    
     try {
       const url = editingProduct 
         ? `${API_BASE}/products/${editingProduct.id}/`
         : `${API_BASE}/products/`
       const method = editingProduct ? 'PUT' : 'POST'
+      
+      console.log('Saving product:', { url, method, productForm })
       
       const response = await fetch(url, {
         method,
@@ -237,13 +257,16 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
         body: JSON.stringify(productForm)
       })
       
+      console.log('Response status:', response.status)
+      
       if (response.ok) {
         alert(editingProduct ? 'Product updated successfully!' : 'Product created successfully!')
         loadProducts()
         resetProductForm()
       } else {
-        const error = await response.json()
-        alert(`Error: ${error.message || 'Failed to save product'}`)
+        const error = await response.text()
+        console.error('Error response:', error)
+        alert(`Error: ${error || 'Failed to save product'}`)
       }
     } catch (error) {
       console.error('Error saving product:', error)
@@ -256,15 +279,22 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
     if (!confirm('Are you sure you want to delete this product?')) return
     
     try {
-      const response = await fetch(`${API_BASE}/products/${productId}/`, {
+      const url = `${API_BASE}/products/${productId}/`
+      console.log('Deleting product:', { url, productId })
+      
+      const response = await fetch(url, {
         method: 'DELETE'
       })
+      
+      console.log('Delete response status:', response.status)
       
       if (response.ok) {
         alert('Product deleted successfully!')
         loadProducts()
       } else {
-        alert('Error deleting product')
+        const error = await response.text()
+        console.error('Delete error response:', error)
+        alert(`Error deleting product: ${error}`)
       }
     } catch (error) {
       console.error('Error deleting product:', error)
