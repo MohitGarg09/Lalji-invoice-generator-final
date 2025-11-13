@@ -24,30 +24,16 @@ export default function LaljiLogo({ size = 'medium', className = '' }: LaljiLogo
         height: currentSize.height,
       }}
     >
-      {/* Placeholder for actual logo - you can replace this with an img tag when you have the logo file */}
-      <div style={{
-        fontSize: size === 'small' ? '24px' : size === 'medium' ? '32px' : '40px',
-        fontWeight: 'bold',
-        color: 'white',
-        textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-        fontFamily: 'serif',
-        letterSpacing: '2px',
-      }}>
-        🍽️ Lalji Caterers
-      </div>
-      
-      {/* 
-      To use actual logo image, replace the div above with:
       <img 
-        src="/path/to/lalji-logo.png" 
-        alt="Lalji Caterers" 
+        src="/lalji-logo.jpg" 
+        alt="Lalji Caterers - Munna Seth's" 
         style={{
           width: '100%',
           height: '100%',
           objectFit: 'contain',
+          filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.2))',
         }}
       />
-      */}
     </div>
   )
 }
