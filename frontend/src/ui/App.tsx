@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import CRM from './CRM'
 import SweetDropdown from './SweetDropdown'
-import LaljiLogo from './LaljiLogo'
 
 type Sweet = {
   id: number
