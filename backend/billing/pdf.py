@@ -198,7 +198,7 @@ def render_invoice_pdf(invoice):
         c.setFont(*ROW_FONT)
         # iterate items safely; if invoice.items fails, catch below
         try:
-            items_qs = invoice.items.select_related("sweet").all()
+            items_qs = invoice.items.select_related("sweet").order_by("order", "id")
         except Exception:
             items_qs = []
             logger.exception("Failed to fetch invoice.items for invoice id=%s", invoice_id)
@@ -279,7 +279,7 @@ def render_invoice_pdf(invoice):
         # --- Calculate totals ---
         subtotal = Decimal("0.00")
         try:
-            items_for_totals = invoice.items.select_related("sweet").all()
+            items_for_totals = invoice.items.select_related("sweet").order_by("order", "id")
         except Exception:
             items_for_totals = []
             logger.exception("Failed to fetch invoice.items for totals for invoice id=%s", invoice_id)
