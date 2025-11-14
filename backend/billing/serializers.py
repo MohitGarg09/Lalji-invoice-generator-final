@@ -19,7 +19,8 @@ class InvoiceItemSerializer(serializers.ModelSerializer):
     total_amount = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
     unit_price_override = serializers.DecimalField(max_digits=10, decimal_places=2, required=False, allow_null=True)
     item_type = serializers.ChoiceField(choices=['weight', 'count'], required=False, allow_null=True)
-    sweet_name = serializers.CharField(source='sweet.name', read_only=True)
+    # Use the stored sweet_name field instead of relying on sweet.name relationship
+    sweet_name = serializers.CharField(read_only=True)
 
     class Meta:
         model = InvoiceItem
@@ -158,10 +159,25 @@ class InvoiceSerializer(serializers.ModelSerializer):
             
             for item in items_data:
                 item = self._ensure_item_type(item)
-                InvoiceItem.objects.create(invoice=instance, **item)
+                
+                # Get sweet name to preserve it during update
+                sweet = item.get('sweet')
+                sweet_name = ''
+                if sweet:
+                    if hasattr(sweet, 'name'):
+                        sweet_name = sweet.name
+                    else:
+                        # If sweet is an ID, get the name from database
+                        try:
+                            sweet_obj = Sweet.objects.get(id=sweet)
+                            sweet_name = sweet_obj.name
+                        except Sweet.DoesNotExist:
+                            sweet_name = 'Unknown Sweet'
+                
+                # Create invoice item with sweet name preserved
+                InvoiceItem.objects.create(invoice=instance, sweet_name=sweet_name, **item)
                 
                 # Track which sweets were used
-                sweet = item.get('sweet')
                 if sweet:
                     # Handle both Sweet object and Sweet ID
                     sweet_id = sweet.id if hasattr(sweet, 'id') else sweet

@@ -118,6 +118,10 @@ export default function SweetDropdown({ sweets, products = [], value, onChange, 
 
   // Handle item selection
   const handleItemSelect = (item: DropdownItem) => {
+    // Add debug logging to track item selection
+    const itemType = isSweet(item) ? 'Sweet' : 'Product'
+    console.log(`SweetDropdown: Selected ${itemType} - ${item.name} (ID: ${item.id})`)
+    
     onChange(item.name, item)
     setIsOpen(false)
     inputRef.current?.blur()

@@ -241,6 +241,11 @@ export default function InvoiceApp() {
           const sweet = workingSweets.find((s) => s.id === it.sweetId);
           const product = products.find((p) => p.id === it.sweetId);
           
+          // Debug logging to track item resolution
+          console.log(`Processing item ${i}: sweetId=${it.sweetId}, sweetName="${it.sweetName}"`);
+          console.log(`Found sweet:`, sweet ? `${sweet.name} (ID: ${sweet.id})` : 'none');
+          console.log(`Found product:`, product ? `${product.name} (ID: ${product.id})` : 'none');
+          
           // If it's a product (not found in sweets), create a corresponding sweet
           if (!sweet && product) {
             // First check if a sweet with this name already exists

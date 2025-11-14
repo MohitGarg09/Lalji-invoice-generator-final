@@ -250,9 +250,17 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
       return
     }
     
-    if (!productForm.price_per_kg.trim() && !productForm.price_per_unit.trim()) {
-      alert('At least one price (per kg or per unit) is required')
-      return
+    // Validate price based on product type
+    if (productForm.product_type === 'weight') {
+      if (!productForm.price_per_kg.trim()) {
+        alert('Price per KG is required for weight-based products')
+        return
+      }
+    } else if (productForm.product_type === 'count') {
+      if (!productForm.price_per_unit.trim()) {
+        alert('Price per Unit is required for count-based products')
+        return
+      }
     }
     
     try {
@@ -1399,6 +1407,7 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
                                       unit_price_override: itemType === 'weight' ? pricePerKg : pricePerUnit
                                     })
                                   } else {
+                                    // When typing a new name, preserve it and clear the sweet ID
                                     updateItem({ sweet: undefined, sweet_name: value })
                                   }
                                 }}
@@ -1735,7 +1744,17 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
                     </label>
                     <select
                       value={productForm.product_type}
-                      onChange={(e) => setProductForm({...productForm, product_type: e.target.value as 'weight' | 'count'})}
+                      onChange={(e) => {
+                        const newType = e.target.value as 'weight' | 'count'
+                        // Clear the irrelevant price field when type changes
+                        setProductForm({
+                          ...productForm, 
+                          product_type: newType,
+                          // Clear price_per_unit if switching to weight, clear price_per_kg if switching to count
+                          price_per_unit: newType === 'weight' ? '' : productForm.price_per_unit,
+                          price_per_kg: newType === 'count' ? '' : productForm.price_per_kg
+                        })
+                      }}
                       style={{
                         width: '100%',
                         padding: '10px 12px',
@@ -1753,14 +1772,21 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
                 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
                   <div>
-                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#374151', marginBottom: '6px' }}>
-                      Price per KG
+                    <label style={{ 
+                      display: 'block', 
+                      fontSize: '14px', 
+                      fontWeight: 600, 
+                      color: productForm.product_type === 'weight' ? '#374151' : '#9ca3af', 
+                      marginBottom: '6px' 
+                    }}>
+                      Price per KG {productForm.product_type === 'count' && '(disabled for count type)'}
                     </label>
                     <input
                       type="number"
                       step="0.01"
                       value={productForm.price_per_kg}
                       onChange={(e) => setProductForm({...productForm, price_per_kg: e.target.value})}
+                      disabled={productForm.product_type === 'count'}
                       style={{
                         width: '100%',
                         padding: '10px 12px',
@@ -1768,20 +1794,30 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
                         border: '1px solid #d1d5db',
                         borderRadius: '6px',
                         outline: 'none',
+                        backgroundColor: productForm.product_type === 'count' ? '#f9fafb' : 'white',
+                        color: productForm.product_type === 'count' ? '#9ca3af' : '#374151',
+                        cursor: productForm.product_type === 'count' ? 'not-allowed' : 'text',
                       }}
-                      placeholder="0.00"
+                      placeholder={productForm.product_type === 'weight' ? '0.00' : 'Not applicable'}
                     />
                   </div>
                   
                   <div>
-                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#374151', marginBottom: '6px' }}>
-                      Price per Unit
+                    <label style={{ 
+                      display: 'block', 
+                      fontSize: '14px', 
+                      fontWeight: 600, 
+                      color: productForm.product_type === 'count' ? '#374151' : '#9ca3af', 
+                      marginBottom: '6px' 
+                    }}>
+                      Price per Unit {productForm.product_type === 'weight' && '(disabled for weight type)'}
                     </label>
                     <input
                       type="number"
                       step="0.01"
                       value={productForm.price_per_unit}
                       onChange={(e) => setProductForm({...productForm, price_per_unit: e.target.value})}
+                      disabled={productForm.product_type === 'weight'}
                       style={{
                         width: '100%',
                         padding: '10px 12px',
@@ -1789,8 +1825,11 @@ export default function CRM({ onNavigateToInvoice, refreshTrigger = 0 }: CRMProp
                         border: '1px solid #d1d5db',
                         borderRadius: '6px',
                         outline: 'none',
+                        backgroundColor: productForm.product_type === 'weight' ? '#f9fafb' : 'white',
+                        color: productForm.product_type === 'weight' ? '#9ca3af' : '#374151',
+                        cursor: productForm.product_type === 'weight' ? 'not-allowed' : 'text',
                       }}
-                      placeholder="0.00"
+                      placeholder={productForm.product_type === 'count' ? '0.00' : 'Not applicable'}
                     />
                   </div>
                 </div>
