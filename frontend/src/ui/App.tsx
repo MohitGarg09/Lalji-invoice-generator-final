@@ -22,6 +22,7 @@ type InvoiceItemDraft = {
   count?: string
   unit_price_override?: string
   amount?: number
+  sourceType?: 'sweet' | 'product' | 'manual'
 }
 
 // Use environment variable for API base (e.g., https://your-backend.onrender.com/api)
@@ -67,9 +68,21 @@ export default function InvoiceApp() {
     setItems((prev) => {
       const newItems = [...prev]
       const item = { ...newItems[idx], ...patch }
-      // Find the item in either sweets or products
-      const sweet = sweets.find((s) => s.id === item.sweetId)
-      const product = products.find((p) => p.id === item.sweetId)
+      // Find the item in either sweets or products, honoring sourceType when available
+      let sweet: Sweet | undefined = undefined
+      let product: any | undefined = undefined
+      if (item.sweetId) {
+        if (item.sourceType === 'sweet') {
+          sweet = sweets.find((s) => s.id === item.sweetId)
+        } else if (item.sourceType === 'product') {
+          product = products.find((p) => p.id === item.sweetId)
+        } else {
+          sweet = sweets.find((s) => s.id === item.sweetId)
+          if (!sweet) {
+            product = products.find((p) => p.id === item.sweetId)
+          }
+        }
+      }
       const foundItem = sweet || product
       const mode = item.mode || (sweet ? sweet.sweet_type : product?.product_type)
 
@@ -238,8 +251,13 @@ export default function InvoiceApp() {
         
         // Case 1: Item has sweetId - check if it's a product that needs conversion
         if (it.sweetId) {
-          const sweet = workingSweets.find((s) => s.id === it.sweetId);
-          const product = products.find((p) => p.id === it.sweetId);
+          let sweet = workingSweets.find((s) => s.id === it.sweetId);
+          let product = products.find((p) => p.id === it.sweetId);
+          if (it.sourceType === 'product') {
+            sweet = undefined;
+          } else if (it.sourceType === 'sweet') {
+            product = undefined;
+          }
           
           // Debug logging to track item resolution
           console.log(`Processing item ${i}: sweetId=${it.sweetId}, sweetName="${it.sweetName}"`);
@@ -553,8 +571,13 @@ export default function InvoiceApp() {
           
           // If item has sweetId, check if it's a product that needs to be converted to sweet
           if (it.sweetId) {
-            const sweet = workingSweets.find((s) => s.id === it.sweetId)
-            const product = products.find((p) => p.id === it.sweetId)
+            let sweet = workingSweets.find((s) => s.id === it.sweetId)
+            let product = products.find((p) => p.id === it.sweetId)
+            if (it.sourceType === 'product') {
+              sweet = undefined
+            } else if (it.sourceType === 'sweet') {
+              product = undefined
+            }
             
             // If it's a product (not found in sweets), create a corresponding sweet
             if (!sweet && product) {
@@ -1499,6 +1522,9 @@ export default function InvoiceApp() {
                               it.mode
                             const pricePerKg = selectedItem?.price_per_kg
                             const pricePerUnit = selectedItem?.price_per_unit
+                            const sourceType = selectedItem
+                              ? ('sweet_type' in selectedItem ? 'sweet' : 'product')
+                              : it.sourceType
                             
                             // Debug logging to track what's being selected
                             if (selectedItem) {
@@ -1515,10 +1541,11 @@ export default function InvoiceApp() {
                               sweetName: name,
                               sweetId: selectedItem?.id,
                               mode: selectedItem ? it.mode ?? itemType : it.mode,
+                              sourceType,
                               // Auto-fill unit price if available
                               unit_price_override: itemType === 'weight' ? pricePerKg : pricePerUnit,
                             })
-                            
+                          
                             // Auto-focus to appropriate input after selection
                             if (selectedItem) {
                               setTimeout(() => {
