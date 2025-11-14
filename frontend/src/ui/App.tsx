@@ -406,6 +406,14 @@ export default function InvoiceApp() {
               throw new Error(`Sweet with ID ${it.sweetId} not found`);
             }
             
+            // Debug logging to track what's being sent to backend
+            console.log(`📤 Sending to backend - Row item:`, {
+              originalName: it.sweetName,
+              sweetId: it.sweetId,
+              foundSweetName: sweet.name,
+              foundSweetId: sweet.id
+            });
+            
             const mode = it.mode || sweet.sweet_type;
             if (mode === "weight") {
               return {
@@ -1412,6 +1420,15 @@ export default function InvoiceApp() {
                       product = products.find((p) => p.name.toLowerCase() === it.sweetName!.toLowerCase())
                     }
                     foundItem = sweet || product
+                    
+                    // Debug logging for display logic
+                    console.log(`🖼️ Display logic for row ${idx}:`, {
+                      storedSweetName: it.sweetName,
+                      storedSweetId: it.sweetId,
+                      foundItemName: foundItem?.name,
+                      foundItemId: foundItem?.id,
+                      foundItemType: foundItem ? ('sweet_type' in foundItem ? 'Sweet' : 'Product') : 'None'
+                    });
                   }
                   
                   // If not found by name and we have sweetId, try by ID (but be careful about type)
@@ -1461,6 +1478,17 @@ export default function InvoiceApp() {
                               it.mode
                             const pricePerKg = selectedItem?.price_per_kg
                             const pricePerUnit = selectedItem?.price_per_unit
+                            
+                            // Debug logging to track what's being selected
+                            if (selectedItem) {
+                              const itemSource = 'sweet_type' in selectedItem ? 'Sweet' : 'Product'
+                              console.log(`🔍 Item selected in row ${idx}:`, {
+                                name: selectedItem.name,
+                                id: selectedItem.id,
+                                type: itemSource,
+                                itemType: itemType
+                              })
+                            }
                             
                             updateItem(idx, {
                               sweetName: name,
