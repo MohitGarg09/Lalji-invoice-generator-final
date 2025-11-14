@@ -1400,10 +1400,29 @@ export default function InvoiceApp() {
 
               <tbody>
                 {items.map((it, idx) => {
-                  // Find the item in either sweets or products
-                  const sweet = sweets.find((s) => s.id === it.sweetId)
-                  const product = products.find((p) => p.id === it.sweetId)
-                  const foundItem = sweet || product
+                  // Find the item - prioritize by name match first, then by ID
+                  let foundItem = null
+                  let sweet = null
+                  let product = null
+                  
+                  if (it.sweetName && it.sweetName.trim()) {
+                    // First try to find by name (more reliable)
+                    sweet = sweets.find((s) => s.name.toLowerCase() === it.sweetName!.toLowerCase())
+                    if (!sweet) {
+                      product = products.find((p) => p.name.toLowerCase() === it.sweetName!.toLowerCase())
+                    }
+                    foundItem = sweet || product
+                  }
+                  
+                  // If not found by name and we have sweetId, try by ID (but be careful about type)
+                  if (!foundItem && it.sweetId) {
+                    sweet = sweets.find((s) => s.id === it.sweetId)
+                    if (!sweet) {
+                      product = products.find((p) => p.id === it.sweetId)
+                    }
+                    foundItem = sweet || product
+                  }
+                  
                   const mode = it.mode || (sweet ? sweet.sweet_type : product?.product_type)
                   const amount = it.amount || 0
 
