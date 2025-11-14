@@ -390,7 +390,22 @@ def render_invoice_pdf(invoice):
         c.save()
         pdf = buffer.getvalue()
         buffer.close()
-        filename = f"invoice_{invoice_id}.pdf"
+
+        # Build human-friendly filename: "DD-MM-YYYY (DM No.).pdf"
+        dm_raw = getattr(invoice, "dm_no", None)
+        dm_str = str(dm_raw).strip() if dm_raw is not None else ""
+        # created_str already computed above as "%d-%m-%Y" or "-"
+
+        if created_str != "-" and dm_str:
+            # Sanitize DM number to be filesystem-safe
+            safe_dm = "".join(
+                ch if ch.isalnum() or ch in " -_." else "_" for ch in dm_str
+            )
+            filename = f"{created_str} ({safe_dm}).pdf"
+        else:
+            # Fallback to original pattern if we don't have proper date/DM
+            filename = f"invoice_{invoice_id}.pdf"
+
         return pdf, filename
 
     except Exception:

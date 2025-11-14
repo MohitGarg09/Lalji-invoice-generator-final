@@ -254,6 +254,19 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
     
+    @decorators.action(detail=False, methods=["get"])
+    def customer_names(self, request):
+        """Return distinct non-empty customer names for dropdown suggestions."""
+        names_qs = (
+            Invoice.objects
+            .exclude(customer_name__isnull=True)
+            .exclude(customer_name__exact="")
+            .values_list("customer_name", flat=True)
+            .distinct()
+            .order_by("customer_name")
+        )
+        return Response(list(names_qs))
+    
     @decorators.action(detail=False, methods=["post", "options"])
     def verify_access(self, request):
         """

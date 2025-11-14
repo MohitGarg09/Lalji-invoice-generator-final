@@ -35,6 +35,7 @@ export default function InvoiceApp() {
   const [sweets, setSweets] = useState<Sweet[]>([])
   const [products, setProducts] = useState<any[]>([])
   const [customerName, setCustomerName] = useState('')
+  const [customerNames, setCustomerNames] = useState<string[]>([])
   const [billType, setBillType] = useState<'GST' | 'Non-GST'>('Non-GST')
   const [paymentMode, setPaymentMode] = useState<'cash' | 'credit'>('credit')
   const [discountPct, setDiscountPct] = useState('0')
@@ -61,6 +62,23 @@ export default function InvoiceApp() {
         setProducts(Array.isArray(data) ? data : data.results ?? [])
       })
       .catch(console.error)
+  }, [])
+
+  // Load distinct customer names from backend for dropdown
+  useEffect(() => {
+    fetch(`${API_BASE}/invoices/customer_names/`)
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to load customer names')
+        return res.json()
+      })
+      .then((data: string[]) => {
+        if (Array.isArray(data)) {
+          setCustomerNames(data.filter((name) => typeof name === 'string' && name.trim() !== ''))
+        }
+      })
+      .catch((err) => {
+        console.error('Error loading customer names', err)
+      })
   }, [])
 
   // Update item and calculate amount
@@ -1089,39 +1107,47 @@ export default function InvoiceApp() {
             >
               👤 Customer Name
             </label>
-            <input
-              ref={(el) => {
-                // Only focus on initial mount, not on every render
-                if (el && !customerName && items.length === 1 && !items[0].sweetName) {
-                  el.focus()
-                }
-              }}
-              placeholder="Enter customer name"
-              value={customerName}
-              onChange={(e) => setCustomerName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault()
-                  // Skip toggles and go directly to DM No
-                  const dmNoInput = document.querySelector('input[placeholder="Enter DM number (required)"]') as HTMLElement
-                  dmNoInput?.focus()
-                }
-              }}
-              className="input-focus"
-              style={{
-                width: '100%',
-                padding: '16px 20px',
-                fontSize: '16px',
-                border: '2px solid rgba(197, 48, 48, 0.3)',
-                borderRadius: '12px',
-                outline: 'none',
-                fontFamily: 'inherit',
-                background: 'rgba(255, 255, 255, 0.8)',
-                backdropFilter: 'blur(10px)',
-                fontWeight: 500,
-                boxSizing: 'border-box',
-              }}
-            />
+            <div style={{ width: '100%' }}>
+              <input
+                ref={(el) => {
+                  // Only focus on initial mount, not on every render
+                  if (el && !customerName && items.length === 1 && !items[0].sweetName) {
+                    el.focus()
+                  }
+                }}
+                placeholder="Enter customer name"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    // Skip toggles and go directly to DM No
+                    const dmNoInput = document.querySelector('input[placeholder="Enter DM number (required)"]') as HTMLElement
+                    dmNoInput?.focus()
+                  }
+                }}
+                list="customer-name-list"
+                className="input-focus"
+                style={{
+                  width: '100%',
+                  padding: '16px 20px',
+                  fontSize: '16px',
+                  border: '2px solid rgba(197, 48, 48, 0.3)',
+                  borderRadius: '12px',
+                  outline: 'none',
+                  fontFamily: 'inherit',
+                  background: 'rgba(255, 255, 255, 0.8)',
+                  backdropFilter: 'blur(10px)',
+                  fontWeight: 500,
+                  boxSizing: 'border-box',
+                }}
+              />
+              <datalist id="customer-name-list">
+                {customerNames.map((name) => (
+                  <option key={name} value={name} />
+                ))}
+              </datalist>
+            </div>
           </div>
 
 {/* Toggles Section */}
