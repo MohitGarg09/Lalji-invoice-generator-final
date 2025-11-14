@@ -246,8 +246,29 @@ export default function InvoiceApp() {
           console.log(`Found sweet:`, sweet ? `${sweet.name} (ID: ${sweet.id})` : 'none');
           console.log(`Found product:`, product ? `${product.name} (ID: ${product.id})` : 'none');
           
-          // If it's a product (not found in sweets), create a corresponding sweet
-          if (!sweet && product) {
+          // CRITICAL FIX: If we have both sweet and product with same ID, prioritize by name match
+          if (sweet && product && it.sweetName) {
+            // Check which one actually matches the stored name
+            const sweetNameMatch = sweet.name.toLowerCase() === it.sweetName.toLowerCase();
+            const productNameMatch = product.name.toLowerCase() === it.sweetName.toLowerCase();
+            
+            console.log(`🔧 ID collision detected! Sweet: "${sweet.name}", Product: "${product.name}", Stored: "${it.sweetName}"`);
+            console.log(`Sweet name match: ${sweetNameMatch}, Product name match: ${productNameMatch}`);
+            
+            if (productNameMatch && !sweetNameMatch) {
+              // It's actually a product, treat sweet as null to trigger conversion
+              console.log(`🔄 Treating as product conversion case`);
+              // Continue to product conversion logic below
+            } else if (sweetNameMatch) {
+              // It's actually a sweet, use it directly
+              console.log(`✅ Using existing sweet`);
+              it.mode = it.mode || sweet.sweet_type;
+              continue; // Skip to next item
+            }
+          }
+          
+          // If it's a product (not found in sweets OR name doesn't match sweet), create a corresponding sweet
+          if ((!sweet && product) || (sweet && product && it.sweetName && product.name.toLowerCase() === it.sweetName.toLowerCase())) {
             // First check if a sweet with this name already exists
             const existingSweetByName = workingSweets.find(
               (s) => s.name.toLowerCase() === product.name.toLowerCase()
