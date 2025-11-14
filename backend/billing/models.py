@@ -114,6 +114,9 @@ class InvoiceItem(models.Model):
 
     # Item-specific type (can differ from sweet's default type)
     item_type = models.CharField(max_length=10, choices=TYPE_CHOICES, default='weight')
+    
+    # Order field to maintain the sequence items were added
+    order = models.PositiveIntegerField(default=0)
 
     # for weight-based items (in kg)
     gross_weight_kg = models.DecimalField(max_digits=10, decimal_places=3, null=True, blank=True)
@@ -155,6 +158,9 @@ class InvoiceItem(models.Model):
 
     def __str__(self):
         return f"{self.sweet.name} ({self.invoice_id})"
+    
+    class Meta:
+        ordering = ['order', 'id']  # Order by the order field, then by ID as fallback
 
 
 class InvoicePDFRecord(models.Model):

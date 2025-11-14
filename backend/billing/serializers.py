@@ -25,7 +25,7 @@ class InvoiceItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = InvoiceItem
         fields = [
-            'id', 'sweet', 'sweet_name', 'item_type', 'gross_weight_kg', 'tray_weight_kg', 'net_weight_kg', 'count', 'unit_price_override', 'total_amount'
+            'id', 'sweet', 'sweet_name', 'item_type', 'order', 'gross_weight_kg', 'tray_weight_kg', 'net_weight_kg', 'count', 'unit_price_override', 'total_amount'
         ]
 
     def validate(self, data):
@@ -108,7 +108,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
         # Track sweet usage
         sweet_ids_used = set()
         
-        for item in items_data:
+        for order_index, item in enumerate(items_data):
             item = self._ensure_item_type(item)
             
             # Get sweet name to preserve it
@@ -125,8 +125,8 @@ class InvoiceSerializer(serializers.ModelSerializer):
                     except Sweet.DoesNotExist:
                         sweet_name = 'Unknown Sweet'
             
-            # Create invoice item with sweet name preserved
-            InvoiceItem.objects.create(invoice=invoice, sweet_name=sweet_name, **item)
+            # Create invoice item with sweet name preserved and order set
+            InvoiceItem.objects.create(invoice=invoice, sweet_name=sweet_name, order=order_index, **item)
             
             # Track which sweets were used
             if sweet:
@@ -157,7 +157,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
             # Track sweet usage for updated items
             sweet_ids_used = set()
             
-            for item in items_data:
+            for order_index, item in enumerate(items_data):
                 item = self._ensure_item_type(item)
                 
                 # Get sweet name to preserve it during update
@@ -174,8 +174,8 @@ class InvoiceSerializer(serializers.ModelSerializer):
                         except Sweet.DoesNotExist:
                             sweet_name = 'Unknown Sweet'
                 
-                # Create invoice item with sweet name preserved
-                InvoiceItem.objects.create(invoice=instance, sweet_name=sweet_name, **item)
+                # Create invoice item with sweet name preserved and order set
+                InvoiceItem.objects.create(invoice=instance, sweet_name=sweet_name, order=order_index, **item)
                 
                 # Track which sweets were used
                 if sweet:
