@@ -131,8 +131,10 @@ class InvoiceItem(models.Model):
     @property
     def net_weight_kg(self):
         """Return net weight in kg."""
-        if self.gross_weight_kg is not None and self.tray_weight_kg is not None:
-            net = self.gross_weight_kg - self.tray_weight_kg
+        if self.gross_weight_kg is not None:
+            # Treat missing tray weight as 0 so weight-only entries still contribute
+            tray = self.tray_weight_kg or 0
+            net = self.gross_weight_kg - tray
             return max(net, 0)
         return None
 
