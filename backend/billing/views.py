@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 from rest_framework import viewsets, decorators
 from rest_framework.parsers import MultiPartParser, JSONParser
 from django.http import HttpResponse
@@ -266,6 +267,55 @@ class InvoiceViewSet(viewsets.ModelViewSet):
             .order_by("customer_name")
         )
         return Response(list(names_qs))
+    
+    @decorators.action(detail=True, methods=["post"])
+    def set_date(self, request, pk=None):
+        """Admin-only: Set the created_at date for a single invoice.
+
+        Expected JSON body:
+        {
+          "date": "13-11-2025",  # DD-MM-YYYY
+          "password": "..."       # admin password
+        }
+        """
+        # Verify admin password
+        password = request.data.get("password", "").strip()
+        admin_password = getattr(settings, "ADMIN_PASSWORD", "Admin@2025")
+        if password != admin_password:
+            return Response({"success": False, "message": "Invalid admin password"}, status=403)
+
+        # Parse date string
+        date_str = request.data.get("date", "").strip()
+        if not date_str:
+            return Response({"success": False, "message": "Missing 'date' in request body"}, status=400)
+
+        parsed_dt = None
+        # Try DD-MM-YYYY first
+        for fmt in ("%d-%m-%Y", "%Y-%m-%d"):
+            try:
+                parsed_dt = datetime.strptime(date_str, fmt)
+                break
+            except ValueError:
+                continue
+        if parsed_dt is None:
+            return Response({
+                "success": False,
+                "message": "Invalid date format. Use DD-MM-YYYY or YYYY-MM-DD."
+            }, status=400)
+
+        # Make timezone-aware using project timezone
+        aware_dt = timezone.make_aware(parsed_dt, timezone.get_current_timezone())
+
+        invoice = self.get_object()
+        invoice.created_at = aware_dt
+        invoice.save(update_fields=["created_at"])
+
+        return Response({
+            "success": True,
+            "id": invoice.id,
+            "created_at": invoice.created_at,
+            "message": "Invoice date updated successfully",
+        })
     
     @decorators.action(detail=False, methods=["post", "options"])
     def verify_access(self, request):

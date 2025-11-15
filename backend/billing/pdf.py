@@ -401,7 +401,7 @@ def render_invoice_pdf(invoice):
             safe_dm = "".join(
                 ch if ch.isalnum() or ch in " -_." else "_" for ch in dm_str
             )
-            filename = f"{created_str} ({safe_dm}).pdf"
+            filename = f"{created_str} (DM{safe_dm}).pdf"
         else:
             # Fallback to original pattern if we don't have proper date/DM
             filename = f"invoice_{invoice_id}.pdf"
