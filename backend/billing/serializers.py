@@ -48,17 +48,43 @@ class InvoiceItemSerializer(serializers.ModelSerializer):
 
 class InvoiceSerializer(serializers.ModelSerializer):
     items = InvoiceItemSerializer(many=True)
-    subtotal = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
-    total = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
+    # Compute monetary values dynamically to always reflect current items
+    subtotal = serializers.SerializerMethodField()
+    total = serializers.SerializerMethodField()
     gst_amount = serializers.SerializerMethodField()
-    total_with_gst = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
+    total_with_gst = serializers.SerializerMethodField()
 
     class Meta:
         model = Invoice
         fields = ['id', 'created_at', 'customer_name', 'discount_percent', 'subtotal', 'dm_no', 'payment_mode', 'bill_type', 'total', 'gst_amount', 'total_with_gst', 'items']
 
+    def get_subtotal(self, obj):
+        """Return subtotal based on current items (rounded to 2 decimals)."""
+        try:
+            return round(float(obj.subtotal), 2)
+        except Exception:
+            return 0.0
+
+    def get_total(self, obj):
+        """Return total after discount (without GST)."""
+        try:
+            return round(float(obj.total), 2)
+        except Exception:
+            return 0.0
+
     def get_gst_amount(self, obj):
-        return obj.gst_amount
+        """Return GST amount based on current subtotal/discount and bill type."""
+        try:
+            return round(float(obj.gst_amount), 2)
+        except Exception:
+            return 0.0
+
+    def get_total_with_gst(self, obj):
+        """Return grand total including GST if applicable."""
+        try:
+            return round(float(obj.total_with_gst), 2)
+        except Exception:
+            return 0.0
 
     @staticmethod
     def _ensure_item_type(item_dict):
