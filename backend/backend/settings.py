@@ -186,6 +186,8 @@ CORS_ALLOWED_ORIGINS = [
     "https://laljicaterers.com",   # Production website
     "https://www.laljicaterers.com",  # Production with www
     "https://lalji-invoice-generator-backend.onrender.com",  # Backend itself
+    "https://laljicaterers.com/admin/invoice-app",  # Frontend subdirectory
+    "https://laljicaterers.com/admin/invoice-app/",  # Frontend subdirectory with trailing slash
 ]
 
 # Also allow origins from environment variable
