@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lalji Caterers - Admin Portal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .login-container h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .login-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .error-message {
+            color: #e74c3c;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .admin-dashboard {
+            display: none;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 32px;
+            max-width: 1200px;
+            width: 100%;
+            min-height: 80vh;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e1e5e9;
+        }
+
+        .dashboard-header h1 {
+            color: #333;
+        }
+
+        .logout-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #c0392b;
+        }
+
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .module-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .module-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .module-card h3 {
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+
+        .module-card p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .invoice-generator-container {
+            display: none;
+            background: white;
+            border-radius: 0;
+            box-shadow: none;
+            padding: 0;
+            max-width: 100%;
+            width: 100%;
+            min-height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            overflow: hidden;
+        }
+
+        .invoice-generator-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 0;
+            position: relative;
+            z-index: 10;
+        }
+
+        .invoice-generator-header h2 {
+            margin: 0;
+        }
+
+        .back-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .invoice-app {
+            width: 100%;
+            height: calc(100vh - 70px);
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container" id="loginContainer">
+        <h1>🔐 Admin Portal</h1>
+        <form class="login-form" id="loginForm">
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit" class="login-btn">Login</button>
+        </form>
+        <div class="error-message" id="errorMessage">Invalid password. Please try again.</div>
+    </div>
+
+    <div class="admin-dashboard" id="adminDashboard">
+        <div class="dashboard-header">
+            <h1>🎯 Admin Dashboard</h1>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+        <div class="modules-grid">
+            <div class="module-card" onclick="loadInvoiceGenerator()">
+                <h3>📄 Invoice Generator</h3>
+                <p>Create and manage invoices for Lalji Caterers</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="invoice-generator-container" id="invoiceGeneratorContainer">
+        <div class="invoice-generator-header">
+            <h2>📄 Invoice Generator</h2>
+            <button class="back-btn" onclick="backToDashboard()">← Back to Dashboard</button>
+        </div>
+        <div class="invoice-app" id="invoice-app"></div>
+    </div>
+
+    <script>
+        // Default password - in production, use proper authentication
+        const ADMIN_PASSWORD = 'Lalji@2025';
+
+        // Check if user is already logged in
+        window.onload = function() {
+            const isLoggedIn = localStorage.getItem('adminLoggedIn');
+            if (isLoggedIn === 'true') {
+                showDashboard();
+            }
+        };
+
+        // Login form submission
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const password = document.getElementById('password').value;
+            
+            if (password === ADMIN_PASSWORD) {
+                localStorage.setItem('adminLoggedIn', 'true');
+                showDashboard();
+            } else {
+                document.getElementById('errorMessage').style.display = 'block';
+                document.getElementById('password').value = '';
+            }
+        });
+
+        function showDashboard() {
+            document.getElementById('loginContainer').style.display = 'none';
+            document.getElementById('adminDashboard').style.display = 'block';
+        }
+
+        function logout() {
+            localStorage.removeItem('adminLoggedIn');
+            document.getElementById('loginContainer').style.display = 'block';
+            document.getElementById('adminDashboard').style.display = 'none';
+            document.getElementById('invoiceGeneratorContainer').style.display = 'none';
+        }
+
+        function loadInvoiceGenerator() {
+            const container = document.getElementById('invoice-app');
+            
+            // Clear previous content
+            container.innerHTML = '';
+
+            // Create an iframe to load the React app
+            const iframe = document.createElement('iframe');
+            iframe.src = 'admin/invoice-app/index.html';
+            iframe.style.width = '100%';
+            iframe.style.height = '100vh';
+            iframe.style.border = 'none';
+            iframe.style.position = 'fixed';
+            iframe.style.top = '0';
+            iframe.style.left = '0';
+            
+            container.appendChild(iframe);
+
+            // Set the API URL for the iframe
+            iframe.onload = function() {
+                // Update the API URL in the iframe to point to your existing backend
+                iframe.contentWindow.postMessage({
+                    type: 'SET_API_BASE',
+                    apiBase: 'https://your-existing-backend.onrender.com/api' // Replace with your actual URL
+                }, '*');
+            };
+
+            // Show invoice generator container
+            document.getElementById('adminDashboard').style.display = 'none';
+            document.getElementById('invoiceGeneratorContainer').style.display = 'block';
+        }
+
+        function backToDashboard() {
+            document.getElementById('invoiceGeneratorContainer').style.display = 'none';
+            document.getElementById('adminDashboard').style.display = 'block';
+            document.getElementById('invoice-app').innerHTML = '';
+        }
+    </script>
+</body>
+</html>

@@ -192,7 +192,9 @@ REST_FRAMEWORK = {
 # CORS (configure strict origins in production)
 # Allow specific origins from environment variable, or allow all if not set (development)
 # Strip trailing slashes from origins (Django corsheaders doesn't allow paths in origins)
-CORS_ALLOWED_ORIGINS = [o.strip().rstrip('/') for o in os.environ.get('CORS_ALLOWED_ORIGINS', '').split(',') if o.strip()] if os.environ.get('CORS_ALLOWED_ORIGINS') else []
+# For Render.com deployment, set CORS_ALLOWED_ORIGINS environment variable to:
+# "https://laljicaterers.com,https://www.laljicaterers.com"
+CORS_ALLOWED_ORIGINS = [o.strip().rstrip('/') for o in os.environ.get('CORS_ALLOWED_ORIGINS', 'https://laljicaterers.com,https://www.laljicaterers.com').split(',') if o.strip()] if os.environ.get('CORS_ALLOWED_ORIGINS') else ['https://laljicaterers.com', 'https://www.laljicaterers.com']
 # If CORS_ALLOWED_ORIGINS is not set or empty, allow all origins (for development)
 CORS_ALLOW_ALL_ORIGINS = not bool(CORS_ALLOWED_ORIGINS)
 # Allow credentials (cookies, authorization headers)
