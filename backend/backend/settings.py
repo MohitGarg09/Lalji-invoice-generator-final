@@ -180,20 +180,21 @@ REST_FRAMEWORK = {
 # Allow specific origins from environment variable, or allow all if not set (development)
 # For Render.com deployment, set CORS_ALLOWED_ORIGINS environment variable to:
 # "https://laljicaterers.com,https://www.laljicaterers.com"
+
+# Always allow these origins regardless of DEBUG mode
+CORS_ALLOWED_ORIGINS = [
+    "https://laljicaterers.com",   # Production website
+    "https://www.laljicaterers.com",  # Production with www
+    "https://lalji-invoice-generator-backend.onrender.com",  # Backend itself
+]
+
+# Also allow origins from environment variable
+env_origins = [o.strip() for o in os.environ.get('CORS_ALLOWED_ORIGINS', '').split(',') if o.strip()]
+CORS_ALLOWED_ORIGINS.extend(env_origins)
+
+# Allow all origins in development for testing
 if DEBUG:
-    # Development: allow all origins
     CORS_ALLOW_ALL_ORIGINS = True
-else:
-    # Production: allow specific origins only
-    CORS_ALLOW_ALL_ORIGINS = False
-    CORS_ALLOWED_ORIGINS = [
-        "https://laljicaterers.com",   # Production website
-        "https://www.laljicaterers.com",  # Production with www
-        "https://lalji-invoice-generator-backend.onrender.com",  # Backend itself
-    ]
-    # Also allow origins from environment variable
-    env_origins = [o.strip() for o in os.environ.get('CORS_ALLOWED_ORIGINS', '').split(',') if o.strip()]
-    CORS_ALLOWED_ORIGINS.extend(env_origins)
 # Allow credentials (cookies, authorization headers)
 CORS_ALLOW_CREDENTIALS = True
 # Allow common headers
