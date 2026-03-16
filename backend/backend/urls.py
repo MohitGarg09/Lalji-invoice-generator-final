@@ -24,7 +24,12 @@ def healthz(request):
     """Health check endpoint for Render and monitoring."""
     return JsonResponse({"status": "ok"})
 
+def root_view(request):
+    """Root view to handle requests to /"""
+    return JsonResponse({"message": "Invoice Generator API", "status": "running", "endpoints": {"api": "/api/", "admin": "/admin/", "health": "/healthz"}})
+
 urlpatterns = [
+    path('', root_view, name='root'),
     path('admin/', admin.site.urls),
     path('api/', include('billing.urls')),
     path('healthz', healthz, name='healthz'),
