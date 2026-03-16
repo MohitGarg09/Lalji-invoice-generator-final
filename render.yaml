@@ -22,6 +22,8 @@ services:
         sync: false  # Set this in Render dashboard
       - key: ADMIN_PASSWORD
         sync: false  # Set this in Render dashboard
+      - key: CORS_ALLOWED_ORIGINS
+        value: "https://laljicaterers.com,https://www.laljicaterers.com"
 
 databases:
   - name: invoice-generator-db
