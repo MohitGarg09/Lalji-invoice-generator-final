@@ -210,7 +210,7 @@ CORS_ALLOWED_ORIGINS = [
     "https://invoice-generator-backend.onrender.com",  # Your existing backend
 ]
 # If CORS_ALLOWED_ORIGINS is not set or empty, allow all origins (for development)
-CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOW_ALL_ORIGINS = True  # Temporarily allow all origins
 # Allow credentials (cookies, authorization headers)
 CORS_ALLOW_CREDENTIALS = True
 # Allow common headers
