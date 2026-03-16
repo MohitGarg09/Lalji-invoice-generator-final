@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 
-const API_BASE = (import.meta as any)?.env?.VITE_API_BASE || 'http://127.0.0.1:8000/api'
+const API_BASE = (import.meta as any)?.env?.VITE_API_BASE || 'https://lalji-invoice-generator-backend.onrender.com/api'
 
 // Log API base URL for debugging (only in development or if localhost)
 if (API_BASE.includes('127.0.0.1') || API_BASE.includes('localhost')) {

@@ -13,7 +13,7 @@ services:
       - key: DEBUG
         value: "0"
       - key: ALLOWED_HOSTS
-        value: "invoice-generator-backend.onrender.com"
+        value: "lalji-invoice-generator-backend.onrender.com"
       - key: ACCESS_PASSWORD
         sync: false  # Set this in Render dashboard
       - key: ADMIN_PASSWORD

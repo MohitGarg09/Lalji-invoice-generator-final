@@ -26,7 +26,7 @@ type InvoiceItemDraft = {
 }
 
 // Use environment variable for API base (e.g., https://your-backend.onrender.com/api)
-const API_BASE = (import.meta as any)?.env?.VITE_API_BASE || 'http://127.0.0.1:8000/api'
+const API_BASE = (import.meta as any)?.env?.VITE_API_BASE || 'https://lalji-invoice-generator-backend.onrender.com/api'
 
 export default function InvoiceApp() {
   const [currentPage, setCurrentPage] = useState<'invoice' | 'crm'>('invoice')

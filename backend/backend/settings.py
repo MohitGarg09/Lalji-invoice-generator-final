@@ -97,37 +97,21 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-# Use SQLite for deployment (more reliable than PostgreSQL on free tier)
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# Use PostgreSQL in production, SQLite in development
+if os.environ.get('DATABASE_URL'):
+    # PostgreSQL configuration for production
+    import dj_database_url
+    DATABASES = {
+        'default': dj_database_url.parse(os.environ['DATABASE_URL'], conn_max_age=600)
     }
-}
-
-# Keep PostgreSQL settings as backup (commented out)
-# if os.environ.get('DATABASE_URL'):
-#     # Simple DATABASE_URL parser (postgres, mysql, etc.) via dj-database-url if available
-#     try:
-#         import dj_database_url  # type: ignore
-#         DATABASES = {
-#             'default': dj_database_url.parse(os.environ['DATABASE_URL'], conn_max_age=600)
-#         }
-#     except Exception:
-#         # Fallback to sqlite if parsing not available
-#         DATABASES = {
-#             'default': {
-#                 'ENGINE': 'django.db.backends.sqlite3',
-#                 'NAME': BASE_DIR / 'db.sqlite3',
-#             }
-#         }
-# else:
-#     DATABASES = {
-#         'default': {
-#             'ENGINE': 'django.db.backends.sqlite3',
-#             'NAME': BASE_DIR / 'db.sqlite3',
-#         }
-#     }
+else:
+    # SQLite for development
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
@@ -202,15 +186,20 @@ REST_FRAMEWORK = {
 # Allow specific origins from environment variable, or allow all if not set (development)
 # For Render.com deployment, set CORS_ALLOWED_ORIGINS environment variable to:
 # "https://laljicaterers.com,https://www.laljicaterers.com"
-CORS_ALLOWED_ORIGINS = [
-    "http://127.0.0.1:3000",  # Local development
-    "http://127.0.0.1:5500",  # Local website
-    "https://laljicaterers.com",   # Production website
-    "https://www.laljicaterers.com",  # Production with www
-    "https://invoice-generator-backend.onrender.com",  # Your existing backend
-]
-# If CORS_ALLOWED_ORIGINS is not set or empty, allow all origins (for development)
-CORS_ALLOW_ALL_ORIGINS = True  # Temporarily allow all origins
+if DEBUG:
+    # Development: allow all origins
+    CORS_ALLOW_ALL_ORIGINS = True
+else:
+    # Production: allow specific origins only
+    CORS_ALLOW_ALL_ORIGINS = False
+    CORS_ALLOWED_ORIGINS = [
+        "https://laljicaterers.com",   # Production website
+        "https://www.laljicaterers.com",  # Production with www
+        "https://lalji-invoice-generator-backend.onrender.com",  # Backend itself
+    ]
+    # Also allow origins from environment variable
+    env_origins = [o.strip() for o in os.environ.get('CORS_ALLOWED_ORIGINS', '').split(',') if o.strip()]
+    CORS_ALLOWED_ORIGINS.extend(env_origins)
 # Allow credentials (cookies, authorization headers)
 CORS_ALLOW_CREDENTIALS = True
 # Allow common headers
@@ -254,12 +243,16 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Security settings for production (HTTPS)
 # Render automatically handles HTTPS, but these settings ensure secure cookies
 if not DEBUG:
-    SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'False') == 'True'  # Render handles this
+    SECURE_SSL_REDIRECT = True  # Force HTTPS in production
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_HSTS_SECONDS = int(os.environ.get('SECURE_HSTS_SECONDS', '31536000'))  # 1 year
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
+    # Additional security headers
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_BROWSER_XSS_FILTER = True
+    X_FRAME_OPTIONS = 'DENY'
 
 # Logging configuration
 LOGGING = {
