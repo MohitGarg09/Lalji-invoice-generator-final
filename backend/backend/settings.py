@@ -190,6 +190,8 @@ else:
         "https://laljicaterers.com",   # Production website
         "https://www.laljicaterers.com",  # Production with www
         "https://lalji-invoice-generator-backend.onrender.com",  # Backend itself
+        "https://laljicaterers.com/admin/invoice-app",  # Frontend subdirectory
+        "https://www.laljicaterers.com/admin/invoice-app",  # Frontend subdirectory with www
     ]
     # Also allow origins from environment variable
     env_origins = [o.strip() for o in os.environ.get('CORS_ALLOWED_ORIGINS', '').split(',') if o.strip()]
