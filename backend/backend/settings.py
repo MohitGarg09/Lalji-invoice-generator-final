@@ -197,6 +197,9 @@ CORS_ALLOWED_ORIGINS.extend(env_origins)
 # Allow all origins in development for testing
 if DEBUG:
     CORS_ALLOW_ALL_ORIGINS = True
+
+# Temporarily allow all origins for debugging CORS issues
+CORS_ALLOW_ALL_ORIGINS = True
 # Allow credentials (cookies, authorization headers)
 CORS_ALLOW_CREDENTIALS = True
 # Allow common headers
