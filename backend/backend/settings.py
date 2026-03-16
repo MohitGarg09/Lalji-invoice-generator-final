@@ -194,9 +194,15 @@ REST_FRAMEWORK = {
 # Strip trailing slashes from origins (Django corsheaders doesn't allow paths in origins)
 # For Render.com deployment, set CORS_ALLOWED_ORIGINS environment variable to:
 # "https://laljicaterers.com,https://www.laljicaterers.com"
-CORS_ALLOWED_ORIGINS = [o.strip().rstrip('/') for o in os.environ.get('CORS_ALLOWED_ORIGINS', 'https://laljicaterers.com,https://www.laljicaterers.com').split(',') if o.strip()] if os.environ.get('CORS_ALLOWED_ORIGINS') else ['https://laljicaterers.com', 'https://www.laljicaterers.com']
+CORS_ALLOWED_ORIGINS = [
+    "http://127.0.0.1:3000",  # Local development
+    "http://127.0.0.1:5500",  # Local website
+    "https://laljicaterers.com",   # Production website
+    "https://www.laljicaterers.com",  # Production with www
+    "https://invoice-generator-backend.onrender.com",  # Your existing backend
+]
 # If CORS_ALLOWED_ORIGINS is not set or empty, allow all origins (for development)
-CORS_ALLOW_ALL_ORIGINS = not bool(CORS_ALLOWED_ORIGINS)
+CORS_ALLOW_ALL_ORIGINS = False
 # Allow credentials (cookies, authorization headers)
 CORS_ALLOW_CREDENTIALS = True
 # Allow common headers
