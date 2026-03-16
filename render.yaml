@@ -2,7 +2,7 @@ services:
   - type: web
     name: invoice-generator-backend
     env: python
-    buildCommand: cd backend && chmod +x build.sh && ./build.sh
+    buildCommand: cd backend && python manage.py migrate --noinput && python manage.py collectstatic --noinput
     startCommand: cd backend && gunicorn backend.wsgi:application --bind 0.0.0.0:$PORT
     releaseCommand: cd backend && python manage.py migrate --noinput
     envVars:
@@ -13,7 +13,7 @@ services:
       - key: DEBUG
         value: "0"
       - key: ALLOWED_HOSTS
-        sync: false  # Set this in Render dashboard
+        value: "invoice-generator-backend.onrender.com"
       - key: ACCESS_PASSWORD
         sync: false  # Set this in Render dashboard
       - key: ADMIN_PASSWORD
