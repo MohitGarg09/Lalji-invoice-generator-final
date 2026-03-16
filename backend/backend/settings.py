@@ -97,33 +97,15 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-# Use PostgreSQL in production only if DATABASE_URL is properly set, otherwise use SQLite
-if os.environ.get('DATABASE_URL') and not os.environ.get('DATABASE_URL').startswith('sqlite'):
-    try:
-        # PostgreSQL configuration for production
-        import dj_database_url
-        DATABASES = {
-            'default': dj_database_url.parse(os.environ['DATABASE_URL'], conn_max_age=600)
-        }
-        print("Using PostgreSQL database")
-    except Exception as e:
-        print(f"Failed to connect to PostgreSQL: {e}")
-        print("Falling back to SQLite")
-        DATABASES = {
-            'default': {
-                'ENGINE': 'django.db.backends.sqlite3',
-                'NAME': BASE_DIR / 'db.sqlite3',
-            }
-        }
-else:
-    # SQLite for development or when DATABASE_URL is not set
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
+# Always use SQLite for now to avoid PostgreSQL connection issues
+# You can switch to PostgreSQL later by setting up a proper database
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
-    print("Using SQLite database")
+}
+print("Using SQLite database (stable for deployment)")
 
 
 # Password validation
