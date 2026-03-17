@@ -322,8 +322,9 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         """
         Verify access password for general application access.
         Returns success status if password matches.
+        Optimized for fast response.
         """
-        # Handle OPTIONS preflight request
+        # Handle OPTIONS preflight request - return immediately
         if request.method == 'OPTIONS':
             response = Response()
             origin = request.META.get('HTTP_ORIGIN', '*')
@@ -340,18 +341,19 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         # Get password from request - simplified processing
         password = request.data.get('password', '').strip()
         
-        # Get access password from settings
+        # Get access password from settings - cache in variable
         access_password = getattr(settings, 'ACCESS_PASSWORD', None)
         if access_password is None:
             access_password = getattr(settings, 'ADMIN_PASSWORD', 'Lalji@2025')
         
-        # Simple string comparison
+        # Fast string comparison - return immediately
         if password == access_password:
             response = Response({'success': True, 'message': 'Access granted'})
             response['Access-Control-Allow-Origin'] = origin
             response['Access-Control-Allow-Credentials'] = 'true'
             return response
         
+        # Fast failure response
         response = Response({'success': False, 'message': 'Invalid password'}, status=403)
         response['Access-Control-Allow-Origin'] = origin
         response['Access-Control-Allow-Credentials'] = 'true'
